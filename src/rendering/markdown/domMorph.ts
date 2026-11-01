@@ -98,12 +98,18 @@ function morphChildren(currentParent: Node, targetParent: Node) {
     const currentKeys = new WeakMap<Node, string | null>();
     const targetKeys = new WeakMap<Node, string | null>();
     const desiredKeys = desiredChildren.map((child) => stableNodeKey(child, targetKeys));
+    const lastIndexOfKey = new Map<string, number>();
+    for (let index = 0; index < desiredKeys.length; index++) {
+        const key = desiredKeys[index];
+        if (key !== null) lastIndexOfKey.set(key, index);
+    }
     let current = currentParent.firstChild;
 
     const neededLater = (node: Node, targetIndex: number) => {
         const key = stableNodeKey(node, currentKeys);
         if (key === null) return false;
-        return desiredKeys.slice(targetIndex + 1).includes(key);
+        const lastIndex = lastIndexOfKey.get(key);
+        return lastIndex !== undefined && lastIndex > targetIndex;
     };
 
     let targetIndex = 0;
@@ -191,7 +197,7 @@ export function updateMarkdownArticle(article: HTMLElement, html: string) {
 }
 
 const LARGE_DOCUMENT_THRESHOLD = 200_000;
-const INSERTION_BATCH_CHARACTERS = 40_000;
+const INSERTION_BATCH_CHARACTERS = 120_000;
 
 export function isLargeMarkdownDocument(chunks: string[]): boolean {
     let length = 0;

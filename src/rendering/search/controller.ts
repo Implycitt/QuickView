@@ -1,7 +1,7 @@
 import { PdfState } from '../pdf/state.js';
 import { clearPageIndexStore, pageIndexes } from './pdf/pageIndexStore.js';
 import { scanPdf } from './pdf/scan.js';
-import { clearMarkdownIndex, markdownBlocks, scanMarkdown } from './markdown/index.js';
+import { clearMarkdownIndex, ensureMarkdownIndex, markdownBlocks, scanMarkdown } from './markdown/index.js';
 import { parseQuery } from './core/query.js';
 import type { PageMatch, SearchMode, SearchResult } from './core/types.js';
 import { applyPdfHighlights, applyMarkdownHighlights, setActiveHighlights } from './ui/highlights.js';
@@ -48,6 +48,7 @@ export function runSearch(query: string) {
     clearPendingSearchScroll();
     const version = ++searchVersion;
     const tokens = parseQuery(query);
+    if (tokens.length > 0) ensureMarkdownIndex();
     const hasPdf = !!PdfState.currentPdfDoc;
     const hasMarkdown = markdownBlocks.length > 0;
     searchMode = hasPdf ? 'pdf' : hasMarkdown ? 'md' : null;

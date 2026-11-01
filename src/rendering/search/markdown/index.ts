@@ -10,18 +10,51 @@ export interface MarkdownBlock {
 
 export let markdownBlocks: MarkdownBlock[] = [];
 
-export function indexMarkdown(root: HTMLElement) {
-    markdownBlocks = [];
+let indexRoot: HTMLElement | null = null;
+let indexDirty = false;
+
+function buildIndex(root: HTMLElement) {
     const candidates = Array.from(root.querySelectorAll<HTMLElement>(MD_BLOCK_SELECTOR));
+    const candidateSet = new Set<Element>(candidates);
+    const blocks: MarkdownBlock[] = [];
     for (const element of candidates) {
-        if (element.querySelector(MD_BLOCK_SELECTOR)) continue;
+        let nested = false;
+        for (let parent = element.parentElement; parent && parent !== root; parent = parent.parentElement) {
+            if (candidateSet.has(parent)) {
+                nested = true;
+                break;
+            }
+        }
+        if (nested) continue;
         const text = normalizeBlock(element.textContent || '');
-        if (text.length > 0) markdownBlocks.push({ text, element });
+        if (text.length > 0) blocks.push({ text, element });
     }
+    markdownBlocks = blocks;
+}
+
+export function indexMarkdown(root: HTMLElement) {
+    indexRoot = null;
+    indexDirty = false;
+    buildIndex(root);
+}
+
+export function invalidateMarkdownIndex(root: HTMLElement) {
+    indexRoot = root;
+    indexDirty = true;
+    markdownBlocks = [];
+}
+
+export function ensureMarkdownIndex() {
+    if (!indexDirty) return;
+    indexDirty = false;
+    const root = indexRoot;
+    if (root) buildIndex(root);
 }
 
 export function clearMarkdownIndex() {
     markdownBlocks = [];
+    indexRoot = null;
+    indexDirty = false;
 }
 
 export function markdownBlockLabel(index: number): string {

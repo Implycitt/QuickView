@@ -24,8 +24,8 @@ export async function startApplication() {
     const warmPdfEngine = () => {
         void import('../../rendering/pdf/pdfjs.js').then((module) => module.loadPdfjs()).catch(() => {});
     };
-    if (typeof requestIdleCallback === 'function') requestIdleCallback(warmPdfEngine, { timeout: 1500 });
-    else setTimeout(warmPdfEngine, 300);
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(warmPdfEngine, { timeout: 4000 });
+    else setTimeout(warmPdfEngine, 1200);
 
     const documents = createDocumentController();
     documents.attachViewerStateListeners();

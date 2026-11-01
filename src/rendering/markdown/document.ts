@@ -1,12 +1,19 @@
 import { DOM, toggleSidebar } from '../../ui/core/dom.js';
-import { clearMarkdownIndex, indexMarkdown } from '../search/markdown/index.js';
+import { clearMarkdownIndex, invalidateMarkdownIndex } from '../search/markdown/index.js';
 import { runSearch } from '../search/controller.js';
 import { resetPdfState, setCurrentFileName } from '../pdf/renderer.js';
 import { insertMarkdownChunks, isLargeMarkdownDocument, updateMarkdownArticle } from './domMorph.js';
 import { attachImageFallbacks } from './imageFallback.js';
-import { renderMarkdownChunks, initMdBreadcrumb, attachMarkdownLinks } from './renderer.js';
+import {
+    attachMarkdownLinks,
+    createMarkdownRenderStream,
+    initMdBreadcrumb,
+    renderMarkdownChunks,
+} from './renderer.js';
 import type { FileResponse } from '../../types/types.d.ts';
 import type { StoredViewerState } from '../../viewer/state.js';
+
+const STREAMING_SOURCE_THRESHOLD = 120_000;
 
 function setMarkdownLayout() {
     DOM.mainContentNode.classList.remove('qv-html-viewer');
@@ -39,11 +46,15 @@ export async function renderMarkdownDocument(
     const previousScrollTop = DOM.mainContentNode.scrollTop;
     if (isStale()) return false;
 
+    const source = content.content || '';
+    const filePath = content.path || '';
+    const stream = source.length > STREAMING_SOURCE_THRESHOLD ? createMarkdownRenderStream(source, filePath) : null;
+    const chunks = await (stream ? stream.preview() : renderMarkdownChunks(source, filePath));
+    if (isStale()) return false;
+
     if (!reopening) resetPdfState();
     if (DOM.pdfTools) DOM.pdfTools.classList.add('hidden');
 
-    const chunks = await renderMarkdownChunks(content.content || '', content.path || '');
-    if (isStale()) return false;
     setCurrentFileName(content.name);
     if (!reopening) toggleSidebar('closed');
     DOM.sidebarTabs?.classList.add('hidden');
@@ -53,24 +64,52 @@ export async function renderMarkdownDocument(
 
     const rendered = ensureArticle();
     if (!rendered) return false;
-    if (!reopening && isLargeMarkdownDocument(chunks)) {
-        clearMarkdownIndex();
-        if (!(await insertMarkdownChunks(rendered.article, chunks, isStale))) return false;
-    } else {
-        updateMarkdownArticle(rendered.article, chunks.join(''));
-    }
-    attachImageFallbacks(rendered.article);
-    if (rendered.isFirstRender) attachMarkdownLinks(rendered.article);
-    initMdBreadcrumb(content.name, DOM.mainContentNode);
-    indexMarkdown(DOM.mainContentNode);
+    const { article } = rendered;
 
-    const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
-    runSearch(searchInput?.value ?? '');
-    DOM.mainContentNode.scrollTop =
+    const targetScrollTop =
         viewerState?.documentType === 'markdown'
             ? (viewerState.markdownScrollTop ?? 0)
             : reopening
               ? previousScrollTop
               : 0;
+    const applyScroll = () => {
+        DOM.mainContentNode.scrollTop = targetScrollTop;
+    };
+
+    if (stream) {
+        clearMarkdownIndex();
+        if (chunks.length > 0) article.innerHTML = chunks.join('');
+        else article.replaceChildren();
+    } else if (!reopening && isLargeMarkdownDocument(chunks)) {
+        clearMarkdownIndex();
+        if (!(await insertMarkdownChunks(article, chunks, isStale))) return false;
+    } else {
+        updateMarkdownArticle(article, chunks.join(''));
+    }
+
+    attachImageFallbacks(article);
+    if (rendered.isFirstRender) attachMarkdownLinks(article);
+    initMdBreadcrumb(content.name, DOM.mainContentNode);
+    applyScroll();
+
+    if (!stream) {
+        invalidateMarkdownIndex(DOM.mainContentNode);
+        runSearch((document.getElementById('search-input') as HTMLInputElement | null)?.value ?? '');
+        applyScroll();
+        return true;
+    }
+
+    void (async () => {
+        for await (const rest of stream.rest()) {
+            if (isStale()) return;
+            if (rest.length > 0) article.insertAdjacentHTML('beforeend', rest.join(''));
+        }
+        if (isStale()) return;
+        attachImageFallbacks(article);
+        invalidateMarkdownIndex(DOM.mainContentNode);
+        runSearch((document.getElementById('search-input') as HTMLInputElement | null)?.value ?? '');
+        applyScroll();
+    })();
+
     return true;
 }

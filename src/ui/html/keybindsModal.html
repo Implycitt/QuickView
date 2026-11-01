@@ -1,30 +1,61 @@
 <div
     id="keybinds-modal"
-    class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-md transition-opacity"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center"
     role="dialog"
     aria-modal="true"
     aria-labelledby="keybinds-title"
 >
-    <div
-        class="max-h-[85vh] w-96 max-w-[90%] overflow-y-auto rounded-lg border border-gray-700 bg-gray-800 p-6 shadow-xl"
-    >
-        <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
-            <h2 id="keybinds-title" class="text-xl font-bold text-gray-100">Keyboard shortcuts</h2>
-            <button
-                id="close-keybinds"
-                type="button"
-                aria-label="Close shortcuts"
-                class="text-gray-400 hover:text-lavender-400 text-2xl leading-none"
-            >
+    <div class="qv-keybinds-sheet">
+        <header class="qv-keybinds-header">
+            <h2 id="keybinds-title">Keyboard shortcuts</h2>
+            <button id="close-keybinds" type="button" aria-label="Close shortcuts" class="qv-keybinds-close">
                 &times;
             </button>
-        </div>
-        <div class="mb-4 rounded-md border border-gray-700 bg-gray-900/70 p-3">
-            <div class="mb-3 flex items-center justify-between gap-3">
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-100">Color theme</h3>
-                    <p class="mt-1 text-xs text-gray-400">Choose a palette for the viewer.</p>
-                </div>
+        </header>
+        <div class="qv-keybinds-body">
+            <div class="qv-keybinds-groups">
+                <section class="qv-keybinds-group">
+                    <h3>Navigate</h3>
+                    <dl>
+                        <div class="qv-keybind"><dt><kbd>J / &darr;</kbd></dt><dd>Scroll down</dd></div>
+                        <div class="qv-keybind"><dt><kbd>K / &uarr;</kbd></dt><dd>Scroll up</dd></div>
+                        <div class="qv-keybind"><dt><kbd>G</kbd></dt><dd>Jump to page</dd></div>
+                        <div class="qv-keybind"><dt><kbd>;</kbd></dt><dd>Search document (fuzzy)</dd></div>
+                    </dl>
+                </section>
+                <section class="qv-keybinds-group">
+                    <h3>View</h3>
+                    <dl>
+                        <div class="qv-keybind"><dt><kbd>Z</kbd></dt><dd>Zoom in</dd></div>
+                        <div class="qv-keybind"><dt><kbd>X</kbd></dt><dd>Zoom out</dd></div>
+                        <div class="qv-keybind"><dt><kbd>M</kbd></dt><dd>Toggle scroll mode</dd></div>
+                        <div class="qv-keybind"><dt><kbd>B</kbd></dt><dd>Book view (two pages)</dd></div>
+                    </dl>
+                </section>
+                <section class="qv-keybinds-group">
+                    <h3>Panels</h3>
+                    <dl>
+                        <div class="qv-keybind"><dt><kbd>S</kbd></dt><dd>Toggle sidebar</dd></div>
+                        <div class="qv-keybind"><dt><kbd>O</kbd></dt><dd>Sections / previews</dd></div>
+                        <div class="qv-keybind"><dt><kbd>L</kbd></dt><dd>Sidebar follow</dd></div>
+                        <div class="qv-keybind"><dt><kbd>T</kbd></dt><dd>Color themes</dd></div>
+                    </dl>
+                </section>
+                <section class="qv-keybinds-group">
+                    <h3>Tools</h3>
+                    <dl>
+                        <div class="qv-keybind"><dt><kbd>I</kbd></dt><dd>Magnifier at the cursor</dd></div>
+                        <div class="qv-keybind"><dt><kbd>C</kbd></dt><dd>Magnifier while held</dd></div>
+                        <div class="qv-keybind"><dt><kbd>[ / ]</kbd></dt><dd>Magnifier power</dd></div>
+                        <div class="qv-keybind"><dt><kbd>CTRL + scroll</kbd></dt><dd>Magnifier power (wheel)</dd></div>
+                        <div class="qv-keybind"><dt><kbd>F</kbd></dt><dd>Open file</dd></div>
+                        <div class="qv-keybind"><dt><kbd>/</kbd></dt><dd>Show keybinds</dd></div>
+                    </dl>
+                </section>
+            </div>
+            <aside class="qv-keybinds-options">
+                <h3>Color theme</h3>
+                <p class="qv-keybinds-hint">Choose a palette for the viewer.</p>
                 <button
                     id="open-theme-picker"
                     type="button"
@@ -34,95 +65,24 @@
                 >
                     Choose theme
                 </button>
-            </div>
-            <p id="color-scheme-status" class="theme-picker-status" aria-live="polite"></p>
-            <label for="free-scroll-amount" class="mb-2 block text-xs text-gray-400">Free scroll amount</label>
-            <input
-                id="free-scroll-amount"
-                type="range"
-                min="60"
-                max="720"
-                step="30"
-                value="240"
-                aria-label="Free-mode scroll amount"
-                class="w-full cursor-pointer accent-lavender-400"
-            />
-            <p id="free-scroll-amount-hint" class="mt-2 text-xs text-gray-500">
-                Distance of one j/k step, and the speed it scrolls at while held.
-            </p>
+                <p id="color-scheme-status" class="theme-picker-status" aria-live="polite"></p>
+                <div class="qv-keybinds-divider"></div>
+                <label for="free-scroll-amount" class="qv-keybinds-label">Free scroll amount</label>
+                <input
+                    id="free-scroll-amount"
+                    type="range"
+                    min="60"
+                    max="720"
+                    step="30"
+                    value="240"
+                    aria-label="Free-mode scroll amount"
+                    class="w-full cursor-pointer accent-lavender-400"
+                />
+                <p id="free-scroll-amount-hint" class="qv-keybinds-hint">
+                    Distance of one j/k step, and the speed it scrolls at while held.
+                </p>
+            </aside>
         </div>
-        <ul class="space-y-3 text-sm text-gray-300">
-            <li class="flex justify-between items-center">
-                <span>Toggle Scroll Mode</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">M</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Toggle Book View (two pages)</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">B</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Toggle Sidebar</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">S</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Toggle Sections/Previews</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">O</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Magnifier on the cursor</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">I</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Magnifier while held</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">ALT</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Magnifier power</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">[ / ]</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Magnifier power (wheel)</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">CTRL+SCROLL</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Zoom In</span><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">Z</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Zoom Out</span><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">X</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Open File</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">F</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Jump to Page</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">G</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Scroll Down</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">J / &darr;</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Scroll Up</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">K / &uarr;</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Show Keybinds</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">/</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Open color themes</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">T</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Search Document (fuzzy)</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">;</kbd>
-            </li>
-            <li class="flex justify-between items-center">
-                <span>Toggle Sidebar Follow</span
-                ><kbd class="bg-gray-900 border border-gray-600 px-2 py-1 rounded font-mono">L</kbd>
-            </li>
-        </ul>
     </div>
 </div>
 <dialog id="theme-picker-modal" aria-labelledby="theme-picker-title" aria-describedby="theme-picker-description">

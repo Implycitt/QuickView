@@ -29,7 +29,9 @@ function prepareHtmlDocument(source: string, filePath: string): string {
         )
         .forEach((element) => element.remove());
     for (const element of parsed.querySelectorAll('*')) {
-        for (const attribute of Array.from(element.attributes)) {
+        const attributes = element.attributes;
+        for (let index = attributes.length - 1; index >= 0; index--) {
+            const attribute = attributes[index];
             const name = attribute.name.toLowerCase();
             if (
                 name.startsWith('on') ||

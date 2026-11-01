@@ -18,6 +18,7 @@ const WHEEL_GESTURE_TIMEOUT_MS = 250;
 const SHARP_CROP_SCALE = 2;
 const SHARP_RENDER_INTERVAL_MS = 80;
 const SHARP_COVERAGE_EPSILON = 0.75;
+const MOMENTARY_KEY = 'c';
 const PDF_SCROLL_CONTAINER_ID = 'pdf-scroll-container';
 const PAGE_CONTAINER_SELECTOR = '.pdf-page-container';
 
@@ -395,8 +396,15 @@ export function installPdfMagnifier() {
         if (isActive() && hasPointer) schedule();
     }
 
+    function resetMomentary() {
+        momentary = false;
+        if (!enabled) hideLens();
+    }
+
     function onKeyDown(event: KeyboardEvent) {
-        if (event.key === 'Alt' && !event.repeat) {
+        const holdingKey =
+            event.key.toLowerCase() === MOMENTARY_KEY && !event.repeat && !event.ctrlKey && !event.metaKey && !event.altKey;
+        if (holdingKey && !isTypingTarget(event.target)) {
             momentary = true;
             schedule();
             return;
@@ -441,7 +449,7 @@ export function installPdfMagnifier() {
     }
 
     function onKeyUp(event: KeyboardEvent) {
-        if (event.key !== 'Alt') return;
+        if (event.key.toLowerCase() !== MOMENTARY_KEY) return;
         momentary = false;
         if (!enabled) hideLens();
     }
@@ -454,5 +462,6 @@ export function installPdfMagnifier() {
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
     window.addEventListener('blur', onPointerLost);
+    window.addEventListener('blur', resetMomentary);
     window.addEventListener('resize', onScroll);
 }

@@ -24,8 +24,7 @@ export function registerIpcHandlers(launchPath: string | null) {
 
     async function readAndWatchDocument(targetPath: string, sender: Electron.WebContents) {
         const validPath = await validateDocumentPath(targetPath);
-        const payload = await readFilePayload(validPath);
-        await setAllowedAssetRoot(validPath);
+        const [payload] = await Promise.all([readFilePayload(validPath), setAllowedAssetRoot(validPath)]);
         watchDocument(validPath, sender, () => readFilePayload(validPath));
         return payload;
     }

@@ -1,0 +1,197 @@
+#keybinds-modal {
+    padding: clamp(0.75rem, 2.5vw, 1.75rem);
+    background: color-mix(in srgb, var(--qv-background) 62%, transparent);
+    backdrop-filter: blur(10px);
+}
+
+.qv-keybinds-sheet {
+    display: flex;
+    width: min(100%, 58rem);
+    max-height: 92vh;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--qv-border);
+    border-radius: 0.8rem;
+    background: var(--qv-panel);
+    color: var(--qv-text);
+    box-shadow: 0 24px 72px color-mix(in srgb, var(--qv-background) 55%, transparent);
+}
+
+.qv-keybinds-header {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.05rem 1.4rem 0.9rem;
+    border-bottom: 1px solid var(--qv-border);
+}
+
+.qv-keybinds-header h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 620;
+    letter-spacing: -0.02em;
+}
+
+.qv-keybinds-close {
+    width: 1.9rem;
+    height: 1.9rem;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 0.4rem;
+    background: transparent;
+    color: var(--qv-muted);
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        color 120ms ease,
+        border-color 120ms ease;
+}
+
+.qv-keybinds-close:hover {
+    border-color: var(--qv-border);
+    color: var(--qv-text);
+}
+
+.qv-keybinds-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 16.5rem;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.qv-keybinds-groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    gap: 1.15rem 1.9rem;
+    padding: 1.15rem 1.4rem 1.35rem;
+}
+
+.qv-keybinds-group {
+    border-top: 1px solid var(--qv-border);
+    padding-top: 0.7rem;
+}
+
+.qv-keybinds-group h3 {
+    margin: 0 0 0.45rem;
+    color: var(--qv-text);
+    font-size: 0.82rem;
+    font-weight: 620;
+}
+
+.qv-keybinds-group dl {
+    margin: 0;
+}
+
+.qv-keybind {
+    display: grid;
+    grid-template-columns: 5.6rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0.65rem;
+    padding: 0.26rem 0;
+}
+
+.qv-keybind + .qv-keybind {
+    border-top: 1px solid color-mix(in srgb, var(--qv-border) 55%, transparent);
+}
+
+.qv-keybind dt {
+    margin: 0;
+}
+
+.qv-keybind dd {
+    margin: 0;
+    color: var(--qv-muted);
+    font-size: 0.81rem;
+    line-height: 1.35;
+}
+
+.qv-keybind kbd {
+    display: inline-block;
+    min-width: 2.2rem;
+    padding: 0.1rem 0.36rem;
+    border: 1px solid var(--qv-border);
+    border-bottom-width: 2px;
+    border-radius: 0.32rem;
+    background: var(--qv-background);
+    color: var(--qv-text);
+    font-family: ui-monospace, 'SFMono-Regular', 'JetBrains Mono', Menlo, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.01em;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.qv-keybinds-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.15rem 1.25rem 1.35rem;
+    border-left: 1px solid var(--qv-border);
+    background: color-mix(in srgb, var(--qv-background) 55%, var(--qv-panel));
+}
+
+.qv-keybinds-options h3 {
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 620;
+}
+
+.qv-keybinds-hint {
+    margin: 0;
+    color: var(--qv-muted);
+    font-size: 0.72rem;
+    line-height: 1.45;
+}
+
+.qv-keybinds-options .theme-picker-trigger {
+    width: 100%;
+    text-align: center;
+}
+
+.qv-keybinds-options .theme-picker-status {
+    margin: 0.15rem 0 0;
+}
+
+.qv-keybinds-divider {
+    margin: 0.35rem 0;
+    border-top: 1px solid var(--qv-border);
+}
+
+.qv-keybinds-label {
+    margin: 0.15rem 0 0;
+    color: var(--qv-muted);
+    font-size: 0.72rem;
+}
+
+#keybinds-modal :focus-visible {
+    outline: 2px solid var(--qv-accent);
+    outline-offset: 2px;
+}
+
+@media (max-width: 880px) {
+    .qv-keybinds-body {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .qv-keybinds-options {
+        border-top: 1px solid var(--qv-border);
+        border-left: 0;
+    }
+}
+
+@media (max-width: 620px) {
+    .qv-keybinds-groups {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .qv-keybinds-close {
+        transition: none;
+    }
+}

@@ -145,12 +145,22 @@ function scanHtmlTags(html: string, openElements: string[]) {
     }
 }
 
-function finalizeChunk(html: string, filePath: string): string {
-    return resolveMarkdownMedia(html, filePath).replace(
+const MEDIA_TAG = /<(?:img|source|picture|video|audio|iframe|embed|object|image)\b/i;
+const TASK_ITEM = /<li>\[[ xX]\]\s/;
+
+function rewriteTaskListItems(html: string): string {
+    return html.replace(
         TASK_LIST_ITEM,
         (_match, checked: string) =>
             `<li><input type="checkbox" disabled${checked.toLowerCase() === 'x' ? ' checked' : ''} class="mr-2 inline-block h-4 w-4 translate-y-0.5 accent-lavender-500" aria-label="${checked.toLowerCase() === 'x' ? 'checked' : 'unchecked'}">`,
     );
+}
+
+function finalizeChunk(html: string, filePath: string): string {
+    let output = html;
+    if (filePath && MEDIA_TAG.test(output)) output = resolveMarkdownMedia(output, filePath);
+    if (TASK_ITEM.test(output)) output = rewriteTaskListItems(output);
+    return output;
 }
 
 function groupTopLevelTokens(tokens: ReturnType<MarkdownRenderer['parse']>): ReturnType<MarkdownRenderer['parse']>[] {
@@ -198,26 +208,32 @@ function collectCodeBlocks(
     return blocks;
 }
 
-export async function renderMarkdownChunks(rawMarkdown: string, filePath = ''): Promise<string[]> {
-    const hasMath = /\$[^\n$]+\$|\$\$[\s\S]+?\$\$|^\s*`{3,}\s*(?:latex|math)\s*$/im.test(rawMarkdown);
-    const md = hasMath ? await loadMathMarkdown() : basicMarkdown;
-    const processedMd = rawMarkdown.replace(
-        /^>\s*"?\s*\[!(NOTE|WARNING|TIP|IMPORTANT|CAUTION)\]\s*"?\s*([\s\S]*?)(?=\n\s*\n|$)/gm,
-        (_, type: string, content: string) => {
-            const colors: Record<string, string> = {
-                NOTE: 'border-blue-500 bg-blue-950/40 text-blue-200',
-                WARNING: 'border-yellow-500 bg-yellow-950/40 text-yellow-200',
-                TIP: 'border-emerald-500 bg-emerald-950/40 text-emerald-200',
-                IMPORTANT: 'border-purple-500 bg-purple-950/40 text-purple-200',
-                CAUTION: 'border-red-500 bg-red-950/40 text-red-200',
-            };
-            let cleanContent = content.replace(/^>\s*/gm, '').trim();
-            if (cleanContent.startsWith('"')) cleanContent = cleanContent.slice(1);
-            if (cleanContent.endsWith('"')) cleanContent = cleanContent.slice(0, -1);
-            const rendered = md.renderInline(cleanContent.trim());
-            return `<div class="border-l-4 p-4 my-4 rounded-r ${colors[type] || colors.NOTE}"><p class="font-bold uppercase text-xs tracking-wider mb-1">${type}</p><p class="m-0">${rendered}</p></div>`;
-        },
-    );
+const MATH_SYNTAX = /\$[^\n$]+\$|\$\$[\s\S]+?\$\$|^\s*`{3,}\s*(?:latex|math)\s*$/im;
+const ALERT_BLOCK = /^>\s*"?\s*\[!(NOTE|WARNING|TIP|IMPORTANT|CAUTION)\]\s*"?\s*([\s\S]*?)(?=\n\s*\n|$)/gm;
+const ALERT_COLORS: Record<string, string> = {
+    NOTE: 'border-blue-500 bg-blue-950/40 text-blue-200',
+    WARNING: 'border-yellow-500 bg-yellow-950/40 text-yellow-200',
+    TIP: 'border-emerald-500 bg-emerald-950/40 text-emerald-200',
+    IMPORTANT: 'border-purple-500 bg-purple-950/40 text-purple-200',
+    CAUTION: 'border-red-500 bg-red-950/40 text-red-200',
+};
+const PREVIEW_SOURCE_LIMIT = 120_000;
+const SLICE_SOURCE_LIMIT = 120_000;
+
+function renderAlerts(source: string, md: MarkdownRenderer): string {
+    return source.replace(ALERT_BLOCK, (_, type: string, content: string) => {
+        let cleanContent = content.replace(/^>\s*/gm, '').trim();
+        if (cleanContent.startsWith('"')) cleanContent = cleanContent.slice(1);
+        if (cleanContent.endsWith('"')) cleanContent = cleanContent.slice(0, -1);
+        const rendered = md.renderInline(cleanContent.trim());
+        return `<div class="border-l-4 p-4 my-4 rounded-r ${ALERT_COLORS[type] || ALERT_COLORS.NOTE}"><p class="font-bold uppercase text-xs tracking-wider mb-1">${type}</p><p class="m-0">${rendered}</p></div>`;
+    });
+}
+
+async function renderSourceSlice(rawMarkdown: string, filePath: string): Promise<string[]> {
+    if (!rawMarkdown) return [];
+    const md = MATH_SYNTAX.test(rawMarkdown) ? await loadMathMarkdown() : basicMarkdown;
+    const processedMd = renderAlerts(rawMarkdown, md);
 
     const env = {};
     const tokens = md.parse(processedMd, env);
@@ -238,6 +254,54 @@ export async function renderMarkdownChunks(rawMarkdown: string, filePath = ''): 
     }
     if (chunkHtml) chunks.push(finalizeChunk(chunkHtml, filePath));
     return chunks;
+}
+
+export async function renderMarkdownChunks(rawMarkdown: string, filePath = ''): Promise<string[]> {
+    return renderSourceSlice(rawMarkdown, filePath);
+}
+
+export interface MarkdownRenderStream {
+    preview: () => Promise<string[]>;
+    rest: () => AsyncGenerator<string[]>;
+}
+
+function isFenceDelimiter(line: string): boolean {
+    return /^\s{0,3}(?:```|~~~)/.test(line);
+}
+
+function safeBoundary(source: string, start: number, limit: number): number {
+    if (start + limit >= source.length) return source.length;
+    const target = start + limit;
+    let offset = start;
+    let inFence = false;
+    let lastSafe = -1;
+    while (offset < target) {
+        const newline = source.indexOf('\n', offset);
+        if (newline < 0) break;
+        const line = source.slice(offset, newline);
+        if (isFenceDelimiter(line)) inFence = !inFence;
+        else if (!inFence && line.trim() === '') lastSafe = newline + 1;
+        offset = newline + 1;
+    }
+    return lastSafe > start ? lastSafe : source.length;
+}
+
+export function createMarkdownRenderStream(rawMarkdown: string, filePath = ''): MarkdownRenderStream {
+    const firstEnd = safeBoundary(rawMarkdown, 0, PREVIEW_SOURCE_LIMIT);
+    let offset = firstEnd;
+    return {
+        preview: () => renderSourceSlice(rawMarkdown.slice(0, firstEnd), filePath),
+        rest: async function* () {
+            while (offset < rawMarkdown.length) {
+                const end = safeBoundary(rawMarkdown, offset, SLICE_SOURCE_LIMIT);
+                const slice = rawMarkdown.slice(offset, end);
+                offset = end;
+                if (!slice) break;
+                yield await renderSourceSlice(slice, filePath);
+                await new Promise<void>((resolve) => setTimeout(resolve, 0));
+            }
+        },
+    };
 }
 
 export function attachMarkdownLinks(root: HTMLElement) {

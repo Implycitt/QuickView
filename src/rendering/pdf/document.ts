@@ -96,11 +96,9 @@ export async function renderPdfDocument(
         await renderAllMainPages();
         if (abandonIfStale()) return false;
         if (pdfState?.location) restorePdfPosition(pdfState.location);
-        await renderThumbnails();
-        if (abandonIfStale()) return false;
-        await renderOutline();
-        if (abandonIfStale()) return false;
         openedDoc = null;
+        void renderThumbnails().catch((error: unknown) => console.error('Error rendering PDF thumbnails:', error));
+        void renderOutline().catch((error: unknown) => console.error('Error rendering PDF outline:', error));
         startBackgroundIndex();
         return true;
     } catch (error) {
