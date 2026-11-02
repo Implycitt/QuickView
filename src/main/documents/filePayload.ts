@@ -10,6 +10,11 @@ export async function readFilePayload(targetPath: string): Promise<FileResponse>
         return { name: fileName, path: targetPath, content };
     }
 
+    if (extension === '.pdf') {
+        const { size } = await fs.promises.stat(targetPath);
+        return { name: fileName, path: targetPath, length: size };
+    }
+
     const data = await fs.promises.readFile(targetPath);
     return { name: fileName, path: targetPath, data };
 }

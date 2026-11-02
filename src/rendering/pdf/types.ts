@@ -22,6 +22,13 @@ export interface PdfJsLoadingTask {
 
 export interface PdfJsModule {
     GlobalWorkerOptions: { workerSrc: string };
+    PDFDataRangeTransport: new (
+        length: number,
+        initialData: Uint8Array | null,
+    ) => {
+        requestDataRange: (begin: number, end: number) => void;
+        onDataRange: (begin: number, chunk: Uint8Array) => void;
+    };
     getDocument(options: { data: Uint8Array }): PdfJsLoadingTask;
     TextLayer: new (options: { textContentSource: PdfTextContent; container: HTMLElement; viewport: PdfViewport }) => {
         render(): Promise<void>;

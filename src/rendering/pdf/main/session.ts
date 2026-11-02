@@ -133,7 +133,8 @@ export function createPdfMainSession(deps: PdfMainSessionDependencies) {
         finishMeasurementTimer = setTimeout(() => {
             finishMeasurementTimer = null;
             if (version !== viewerVersion) return;
-            void deps.measurement.measureAllPages(version).then(finishMeasurement, (error: unknown) => {
+            const anchor = Math.min(total, Math.max(1, restore?.page ?? deps.getLastKnownPage() ?? 1));
+            void deps.measurement.measureWindow(anchor).then(finishMeasurement, (error: unknown) => {
                 if (version === viewerVersion) console.error('Error measuring PDF pages:', error);
                 finishMeasurement();
             });

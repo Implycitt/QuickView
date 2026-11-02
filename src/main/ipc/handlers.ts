@@ -1,5 +1,8 @@
 import { BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import fs from 'node:fs';
 import path from 'node:path';
+
+const MAX_RANGE_BYTES = 8 * 1024 * 1024;
 import { readFilePayload, validateDocumentPath } from '../documents/filePayload.js';
 import { watchDocument } from '../documents/fileWatcher.js';
 import { loadColorSchemes } from '../preferences/colorSchemes.js';
@@ -30,6 +33,22 @@ export function registerIpcHandlers(launchPath: string | null) {
     }
 
     ipcMain.handle('file:read', (event, targetPath: string) => readAndWatchDocument(targetPath, event.sender));
+
+    ipcMain.handle('file:read-range', async (_event, targetPath: string, begin: number, end: number) => {
+        const validPath = await validateDocumentPath(targetPath);
+        if (!Number.isSafeInteger(begin) || !Number.isSafeInteger(end) || begin < 0 || end <= begin) {
+            throw new Error('Invalid byte range.');
+        }
+        const length = Math.min(end - begin, MAX_RANGE_BYTES);
+        const handle = await fs.promises.open(validPath, 'r');
+        try {
+            const buffer = Buffer.alloc(length);
+            const { bytesRead } = await handle.read(buffer, 0, length, begin);
+            return buffer.subarray(0, bytesRead);
+        } finally {
+            await handle.close();
+        }
+    });
 
     ipcMain.handle('file:pick-and-read', async (event) => {
         const { canceled, filePaths } = await dialog.showOpenDialog({

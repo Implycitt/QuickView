@@ -6,6 +6,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openColorSchemes: () => ipcRenderer.invoke('preferences:open-color-schemes'),
     pickAndReadFile: () => ipcRenderer.invoke('file:pick-and-read'),
     readFile: (path: string) => ipcRenderer.invoke('file:read', path),
+    readFileRange: (path: string, begin: number, end: number) =>
+        ipcRenderer.invoke('file:read-range', path, begin, end),
     getLaunchPath: () => ipcRenderer.invoke('file:get-launch-path'),
     onFileUpdated: (callback: (data: any) => void) =>
         ipcRenderer.on('file-updated', (_event: IpcRendererEvent, data: any) => callback(data)),

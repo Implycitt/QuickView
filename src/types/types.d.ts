@@ -13,7 +13,11 @@ export type ColorScheme = {
 export type FileResponse = {
     name: string;
     path: string;
-} & ({ data: Uint8Array; content?: never } | { content: string; data?: never });
+} & (
+    | { data: Uint8Array; content?: never; length?: never }
+    | { content: string; data?: never; length?: never }
+    | { length: number; data?: never; content?: never }
+);
 
 declare global {
     interface Window {
@@ -23,6 +27,7 @@ declare global {
             openColorSchemes: () => Promise<string>;
             pickAndReadFile: () => Promise<FileResponse | null>;
             readFile: (path: string) => Promise<FileResponse>;
+            readFileRange: (path: string, begin: number, end: number) => Promise<Uint8Array>;
             getLaunchPath: () => Promise<string | null>;
             onFileUpdated: (callback: (data: FileResponse) => void) => void;
             onFileUnavailable: (callback: (path: string) => void) => void;

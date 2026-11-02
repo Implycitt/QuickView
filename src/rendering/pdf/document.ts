@@ -1,6 +1,6 @@
 import { DOM } from '../../ui/core/dom.js';
 import { loadPdfjs } from './pdfjs.js';
-import type { PdfDocumentLike, PdfJsLoadingTask } from './types.js';
+import type { PdfDocumentLike, PdfJsLoadingTask, PdfJsModule } from './types.js';
 import { PdfState } from './state.js';
 import {
     renderAllMainPages,
@@ -22,6 +22,17 @@ function setPdfLayout() {
     DOM.mainContentNode.classList.remove('pt-8', 'px-8', 'pb-20', 'qv-html-viewer');
 }
 
+function createRangeTransport(pdfjsLib: PdfJsModule, filePath: string, length: number) {
+    const transport = new pdfjsLib.PDFDataRangeTransport(length, null);
+    transport.requestDataRange = (begin: number, end: number) => {
+        window.electronAPI
+            .readFileRange(filePath, begin, end)
+            .then((chunk) => transport.onDataRange(begin, chunk))
+            .catch((error: unknown) => console.error('PDF range read failed:', error));
+    };
+    return transport;
+}
+
 export async function renderPdfDocument(
     content: FileResponse,
     viewerState: StoredViewerState | null,
@@ -29,7 +40,7 @@ export async function renderPdfDocument(
     isStale: () => boolean,
 ): Promise<boolean> {
     if (isStale()) return false;
-    if (!content.data) {
+    if (!content.data && content.length === undefined) {
         resetPdfState();
         DOM.mainContentNode.innerHTML =
             '<div class="p-8 text-red-500 flex justify-center">Failed to load PDF document.</div>';
@@ -59,7 +70,15 @@ export async function renderPdfDocument(
     try {
         const pdfjsLib = await loadPdfjs();
         if (isStale()) return false;
-        loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(content.data) });
+        loadingTask = content.data
+            ? pdfjsLib.getDocument({ data: new Uint8Array(content.data) })
+            : pdfjsLib.getDocument({
+                  range: createRangeTransport(pdfjsLib, content.path, content.length),
+                  length: content.length,
+                  rangeChunkSize: 64 * 1024,
+                  disableAutoFetch: true,
+                  disableStream: true,
+              } as never);
         activeLoad = loadingTask;
         const doc = await loadingTask.promise;
         if (isStale()) {

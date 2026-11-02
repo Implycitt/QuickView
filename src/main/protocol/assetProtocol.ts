@@ -70,6 +70,24 @@ function pathFromRequest(requestUrl: URL): string | null {
     return path.join(allowedAssetRoot ?? path.parse(process.cwd()).root, ...parts);
 }
 
+function parseRange(header: string | null, size: number): { start: number; end: number } | 'invalid' | null {
+    if (!header) return null;
+    const match = /^bytes=(\d*)-(\d*)$/.exec(header.trim());
+    if (!match || (match[1] === '' && match[2] === '')) return 'invalid';
+    let start: number;
+    let end: number;
+    if (match[1] === '') {
+        const suffix = Number(match[2]);
+        start = Math.max(0, size - suffix);
+        end = size - 1;
+    } else {
+        start = Number(match[1]);
+        end = match[2] === '' ? size - 1 : Math.min(Number(match[2]), size - 1);
+    }
+    if (size === 0 || start >= size || start > end) return 'invalid';
+    return { start, end };
+}
+
 function isWithinRoot(root: string, candidate: string): boolean {
     const relative = path.relative(root, candidate);
     return (
@@ -105,6 +123,28 @@ export function registerAssetProtocol() {
             const stats = await fs.promises.stat(resolvedPath);
             if (!stats.isFile()) return new Response('Media not found', { status: 404 });
             await fs.promises.access(resolvedPath, fs.constants.R_OK);
+            const range = parseRange(request.headers.get('range'), stats.size);
+            if (range === 'invalid') {
+                return new Response(null, { status: 416, headers: { 'Content-Range': `bytes */${stats.size}` } });
+            }
+            if (range) {
+                const length = range.end - range.start + 1;
+                const handle = await fs.promises.open(resolvedPath, 'r');
+                try {
+                    const buffer = Buffer.alloc(length);
+                    await handle.read(buffer, 0, length, range.start);
+                    const headers = new Headers({
+                        'Content-Type': contentType,
+                        'Content-Length': String(length),
+                        'Content-Range': `bytes ${range.start}-${range.end}/${stats.size}`,
+                        'Accept-Ranges': 'bytes',
+                        'X-Content-Type-Options': 'nosniff',
+                    });
+                    return new Response(buffer, { status: 206, headers });
+                } finally {
+                    await handle.close();
+                }
+            }
             const file = await net.fetch(pathToFileURL(resolvedPath).href);
             const headers = new Headers(file.headers);
             headers.set('Content-Type', contentType);

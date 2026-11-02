@@ -75,45 +75,6 @@ export function createPdfMeasurement(deps: PdfMeasurementDependencies) {
         return version === deps.getViewerVersion();
     }
 
-    function measureAllPages(version: number): Promise<void> {
-        const run = async () => {
-            const doc = deps.getDocument();
-            if (!doc) return;
-            const total = doc.numPages;
-            if (total === 0) return;
-            const anchor = Math.min(total, Math.max(1, deps.getCurrentPage()));
-            const busyBudget = { remaining: MEASURE_MAX_BUSY_WAIT };
-
-            if (!(await waitWhileBusy(version, busyBudget))) return;
-
-            const priority = orderedWindow(
-                anchor,
-                Math.max(1, anchor - PRIORITY_RADIUS),
-                Math.min(total, anchor + PRIORITY_RADIUS),
-            );
-            for (let start = 0; start < priority.length; start += MEASURE_CHUNK) {
-                if (version !== deps.getViewerVersion()) return;
-                await measureChunk(priority.slice(start, start + MEASURE_CHUNK), version);
-            }
-
-            const remaining: number[] = [];
-            for (let page = 1; page <= total; page++) {
-                if (!deps.layout.isPageMeasured(page)) remaining.push(page);
-            }
-            remaining.sort((left, right) => Math.abs(left - anchor) - Math.abs(right - anchor) || left - right);
-
-            for (let start = 0; start < remaining.length; start += MEASURE_CHUNK) {
-                if (version !== deps.getViewerVersion()) return;
-                await new Promise<void>((resolve) => scheduleIdle(resolve));
-                if (version !== deps.getViewerVersion()) return;
-                await measureChunk(remaining.slice(start, start + MEASURE_CHUNK), version);
-            }
-        };
-        const measurement = measureChain.then(run, run);
-        measureChain = measurement;
-        return measurement;
-    }
-
     async function measureWindow(pageNumber: number, radius = MEASURE_WINDOW_RADIUS): Promise<void> {
         const doc = deps.getDocument();
         if (!doc) return;
@@ -127,5 +88,5 @@ export function createPdfMeasurement(deps: PdfMeasurementDependencies) {
         }
     }
 
-    return { measureAllPages, measureWindow };
+    return { measureWindow };
 }
