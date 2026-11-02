@@ -44,7 +44,3 @@ bun run dev
 ### Downloading Releases
 
 Alternatively, you can use the project by downloading the latest [release](https://github.com/Implycitt/quickView/releases).
-
-## Roadmap
-
-- [x] HTML support
