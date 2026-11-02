@@ -11,8 +11,9 @@ export async function readFilePayload(targetPath: string): Promise<FileResponse>
     }
 
     if (extension === '.pdf') {
-        const { size } = await fs.promises.stat(targetPath);
-        return { name: fileName, path: targetPath, length: size };
+        // Reading the whole file once is faster than many small range requests over the network share.
+        const data = await fs.promises.readFile(targetPath);
+        return { name: fileName, path: targetPath, data };
     }
 
     const data = await fs.promises.readFile(targetPath);

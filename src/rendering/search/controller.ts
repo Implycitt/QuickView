@@ -44,6 +44,13 @@ function selectResult(index: number) {
     );
 }
 
+// The page the reader is on, so the scan can index nearby pages first.
+function currentPdfPage(): number {
+    const counter = document.getElementById('page-counter') as HTMLInputElement | null;
+    const value = Number(counter?.value);
+    return Number.isFinite(value) && value > 0 ? value : 1;
+}
+
 export function runSearch(query: string) {
     clearPendingSearchScroll();
     const version = ++searchVersion;
@@ -73,7 +80,7 @@ export function runSearch(query: string) {
         return;
     }
     if (hasPdf) {
-        void scanPdf(tokens, () => version === searchVersion, publishResults);
+        void scanPdf(tokens, () => version === searchVersion, publishResults, currentPdfPage());
         return;
     }
     const { results, matches } = scanMarkdown(tokens);

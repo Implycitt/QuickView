@@ -1,8 +1,10 @@
 import type { ZoomMode } from '../../viewer/state.js';
 import type { PdfDocumentLike } from './types.js';
+import type { FileResponse } from '../../types/types.d.ts';
 
 export const PdfState = {
     currentPdfDoc: null as PdfDocumentLike | null,
+    currentSource: null as FileResponse | null,
     currentScale: 1.0,
     isSnapMode: false,
     isSpreadMode: false,

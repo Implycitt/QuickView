@@ -22,15 +22,51 @@ function setPdfLayout() {
     DOM.mainContentNode.classList.remove('pt-8', 'px-8', 'pb-20', 'qv-html-viewer');
 }
 
+const RANGE_PIECE_BYTES = 4 * 1024 * 1024;
+const RANGE_RETRIES = 3;
+
+// Reads [begin, end) in pieces the main process accepts, retrying transient failures.
+// A failed read that is never answered leaves pdf.js waiting forever, so retry instead.
+async function readRangeWithRetry(filePath: string, begin: number, end: number): Promise<Uint8Array> {
+    for (let attempt = 0; ; attempt++) {
+        try {
+            return await window.electronAPI.readFileRange(filePath, begin, end);
+        } catch (error) {
+            if (attempt >= RANGE_RETRIES) throw error;
+            await new Promise((resolve) => setTimeout(resolve, 150 * (attempt + 1)));
+        }
+    }
+}
+
 function createRangeTransport(pdfjsLib: PdfJsModule, filePath: string, length: number) {
     const transport = new pdfjsLib.PDFDataRangeTransport(length, null);
     transport.requestDataRange = (begin: number, end: number) => {
-        window.electronAPI
-            .readFileRange(filePath, begin, end)
-            .then((chunk) => transport.onDataRange(begin, chunk))
-            .catch((error: unknown) => console.error('PDF range read failed:', error));
+        void (async () => {
+            try {
+                for (let pieceStart = begin; pieceStart < end; pieceStart += RANGE_PIECE_BYTES) {
+                    const pieceEnd = Math.min(pieceStart + RANGE_PIECE_BYTES, end);
+                    const chunk = await readRangeWithRetry(filePath, pieceStart, pieceEnd);
+                    transport.onDataRange(pieceStart, chunk);
+                }
+            } catch (error) {
+                console.error('PDF range read failed:', error);
+            }
+        })();
     };
     return transport;
+}
+
+// Opens a pdf.js document for a loaded file. Used for the viewer and for the parallel search index.
+export function openPdfDocumentSource(pdfjsLib: PdfJsModule, content: FileResponse) {
+    if (content.data) return pdfjsLib.getDocument({ data: new Uint8Array(content.data) });
+    const length = content.length ?? 0;
+    return pdfjsLib.getDocument({
+        range: createRangeTransport(pdfjsLib, content.path, length),
+        length,
+        rangeChunkSize: 64 * 1024,
+        disableAutoFetch: true,
+        disableStream: true,
+    } as never);
 }
 
 export async function renderPdfDocument(
@@ -70,15 +106,7 @@ export async function renderPdfDocument(
     try {
         const pdfjsLib = await loadPdfjs();
         if (isStale()) return false;
-        loadingTask = content.data
-            ? pdfjsLib.getDocument({ data: new Uint8Array(content.data) })
-            : pdfjsLib.getDocument({
-                  range: createRangeTransport(pdfjsLib, content.path, content.length),
-                  length: content.length,
-                  rangeChunkSize: 64 * 1024,
-                  disableAutoFetch: true,
-                  disableStream: true,
-              } as never);
+        loadingTask = openPdfDocumentSource(pdfjsLib, content);
         activeLoad = loadingTask;
         const doc = await loadingTask.promise;
         if (isStale()) {
@@ -88,6 +116,7 @@ export async function renderPdfDocument(
         }
 
         PdfState.currentPdfDoc = doc;
+        PdfState.currentSource = content;
         openedDoc = doc;
         activeLoad = null;
         loadingTask = null;
