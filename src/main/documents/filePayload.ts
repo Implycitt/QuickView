@@ -2,6 +2,28 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { FileResponse } from '../../types/types.d.ts';
 
+const PDF_CACHE_LIMIT = 3;
+const pdfCache = new Map<string, { size: number; mtimeMs: number; data: Buffer }>();
+
+async function readPdfCached(targetPath: string): Promise<Buffer> {
+    const stat = await fs.promises.stat(targetPath);
+    const cached = pdfCache.get(targetPath);
+    if (cached && cached.size === stat.size && cached.mtimeMs === stat.mtimeMs) {
+        pdfCache.delete(targetPath);
+        pdfCache.set(targetPath, cached);
+        return cached.data;
+    }
+    const data = await fs.promises.readFile(targetPath);
+    pdfCache.delete(targetPath);
+    pdfCache.set(targetPath, { size: stat.size, mtimeMs: stat.mtimeMs, data });
+    while (pdfCache.size > PDF_CACHE_LIMIT) {
+        const oldest = pdfCache.keys().next().value;
+        if (oldest === undefined) break;
+        pdfCache.delete(oldest);
+    }
+    return data;
+}
+
 export async function readFilePayload(targetPath: string): Promise<FileResponse> {
     const fileName = path.basename(targetPath);
     const extension = path.extname(fileName).toLowerCase();
@@ -11,8 +33,7 @@ export async function readFilePayload(targetPath: string): Promise<FileResponse>
     }
 
     if (extension === '.pdf') {
-        // Reading the whole file once is faster than many small range requests over the network share.
-        const data = await fs.promises.readFile(targetPath);
+        const data = await readPdfCached(targetPath);
         return { name: fileName, path: targetPath, data };
     }
 
