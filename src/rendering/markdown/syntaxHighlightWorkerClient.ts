@@ -1,5 +1,5 @@
-import SyntaxHighlightWorker from "./syntaxHighlight.worker.ts?worker&inline";
 import type { HighlightBlock, HighlightRequest, HighlightResponse } from "./syntaxHighlight.worker.js";
+import SyntaxHighlightWorker from "./syntaxHighlight.worker.ts?worker&inline";
 
 let worker: Worker | null = null;
 let nextRequestId = 0;
