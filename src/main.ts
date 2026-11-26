@@ -7,6 +7,8 @@ import { registerAssetProtocol, registerAssetScheme } from './main/protocol/asse
 import { registerIpcHandlers } from './main/ipc/handlers.js';
 import { createMainWindow } from './main/window/createMainWindow.js';
 
+import './main/preferences/discordRPC.js';
+
 const runtimeDir = path.dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(app.isPackaged ? 1 : 2);
 const launchPath = args[0] && !args[0].startsWith('--') ? args[0] : null;

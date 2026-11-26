@@ -3,6 +3,7 @@
     "version": "1.7.0",
     "main": "dist-electron/main.js",
     "dependencies": {
+        "@nxenjs/discord-rich-presence": "^1.0.0",
         "highlight.js": "^11.12.0",
         "katex": "^0.18.9",
         "markdown-it": "^15.0.2",
