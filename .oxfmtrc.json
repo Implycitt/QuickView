@@ -1,0 +1,48 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": ["**/build", "**/node_modules"],
+  "overrides": [
+    {
+      "files": ["**/*.json", "**/*.yml"],
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ],
+
+  // Rules
+  "arrowParens": "avoid",
+  "htmlWhitespaceSensitivity": "ignore",
+  "printWidth": 120,
+  "sortImports": {
+    "customGroups": [
+      {
+        "groupName": "workspace",
+        "elementNamePattern": ["@app/**"]
+      }
+    ],
+    "groups": [
+      "external",
+      "builtin",
+      "subpath",
+      "index",
+      "sibling",
+      "parent",
+      "workspace",
+      "side_effect",
+      "style",
+      "side_effect_style",
+      "unknown"
+    ],
+    "newlinesBetween": true
+  },
+  "sortPackageJson": {
+    "sortScripts": true
+  },
+  "sortTailwindcss": {
+    "stylesheet": "./src/lib/css/index.css"
+  },
+  "svelte": true,
+  "tabWidth": 4,
+  "trailingComma": "none"
+}

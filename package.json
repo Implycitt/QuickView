@@ -1,7 +1,22 @@
 {
     "name": "quickview",
     "version": "1.7.0",
+    "private": true,
     "main": "dist-electron/main.js",
+    "author": "Quentin Bordelon",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "fmt": "oxfmt",
+        "fmt:ci": "oxfmt --check",
+        "lint": "oxlint",
+        "lint:ci": "oxlint --format=github",
+        "lint:fix": "oxlint --fix",
+        "preview": "vite preview",
+        "package": "electron-builder",
+        "typecheck": "tsc --noEmit"
+    },
     "dependencies": {
         "@nxenjs/discord-rich-presence": "^1.0.0",
         "highlight.js": "^11.12.0",
@@ -17,9 +32,9 @@
         "@typescript/native": "npm:typescript@7.0.2",
         "electron": "^45.2.3",
         "electron-builder": "^26.15.3",
-        "eslint": "^10.11.0",
         "globals": "^17.12.0",
-        "prettier": "^3.9.9",
+        "oxfmt": "^0.80.0",
+        "oxlint": "^1.95.0",
         "tailwindcss": "^4.3.3",
         "typescript": "npm:@typescript/typescript6@^6.0.2",
         "typescript-eslint": "^8.70.1",
@@ -52,16 +67,5 @@
             "icon": "assets/icons/icon.png",
             "target": "zip"
         }
-    },
-    "private": true,
-    "scripts": {
-        "dev": "vite",
-        "build": "tsc && vite build",
-        "lint": "eslint .",
-        "preview": "vite preview",
-        "package": "electron-builder",
-        "format": "prettier --write .",
-        "format:check": "prettier --check ."
-    },
-    "type": "module"
+    }
 }
