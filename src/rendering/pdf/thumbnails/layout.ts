@@ -1,5 +1,6 @@
-import { DOM } from '../../../ui/core/dom.js';
-import type { ThumbnailDependencies, ThumbnailLayout } from './types.js';
+import type { ThumbnailDependencies, ThumbnailLayout } from "./types.js";
+
+import { DOM } from "../../../ui/core/dom.js";
 
 const THUMB_GAP = 16;
 const THUMB_INSET = 16;
@@ -50,11 +51,11 @@ export function createThumbnailLayout(deps: ThumbnailDependencies): ThumbnailLay
         const existing = pane.querySelector<HTMLCanvasElement>(`[data-page-num="${page}"]`);
         if (existing) return existing;
         if (tops.length !== doc.numPages || dirty || Math.abs(deps.getSidebarTargetWidth() - width) >= 0.5) rebuild();
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         canvas.className =
-            'cursor-pointer border-2 border-transparent hover:border-lavender-400 transition-colors shadow-sm rounded bg-white';
+            "cursor-pointer border-2 border-transparent hover:border-lavender-400 transition-colors shadow-sm rounded bg-white";
         canvas.dataset.pageNum = String(page);
-        canvas.style.position = 'absolute';
+        canvas.style.position = "absolute";
         canvas.style.left = `${THUMB_INSET}px`;
         canvas.style.width = `calc(100% - ${THUMB_INSET * 2}px)`;
         canvas.style.top = `${tops[page - 1]}px`;
@@ -88,6 +89,6 @@ export function createThumbnailLayout(deps: ThumbnailDependencies): ThumbnailLay
         elements,
         ensureMounted,
         updateAspect,
-        reset,
+        reset
     };
 }

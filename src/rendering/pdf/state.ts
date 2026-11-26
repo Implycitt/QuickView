@@ -1,6 +1,7 @@
-import type { ZoomMode } from '../../viewer/state.js';
-import type { PdfDocumentLike } from './types.js';
-import type { FileResponse } from '../../types/types.d.ts';
+import type { PdfDocumentLike } from "./types.js";
+
+import type { FileResponse } from "../../types/types.d.ts";
+import type { ZoomMode } from "../../viewer/state.js";
 
 export const PdfState = {
     currentPdfDoc: null as PdfDocumentLike | null,
@@ -8,8 +9,8 @@ export const PdfState = {
     currentScale: 1.0,
     isSnapMode: false,
     isSpreadMode: false,
-    zoomMode: 'auto' as ZoomMode,
-    sidebarFollow: true,
+    zoomMode: "auto" as ZoomMode,
+    sidebarFollow: true
 };
 
 let jumpToPageHandler: ((page: number, yCss?: number | null, center?: boolean) => void) | null = null;

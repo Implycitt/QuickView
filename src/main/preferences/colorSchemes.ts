@@ -1,9 +1,11 @@
-import { app } from 'electron';
-import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
-import path from 'node:path';
-import type { ColorScheme } from '../../types/types.d.ts';
+import { app } from "electron";
 
-const COLOR_KEYS = ['background', 'panel', 'stage', 'border', 'text', 'muted', 'accent', 'action'] as const;
+import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+
+import type { ColorScheme } from "../../types/types.d.ts";
+
+const COLOR_KEYS = ["background", "panel", "stage", "border", "text", "muted", "accent", "action"] as const;
 type ColorKey = (typeof COLOR_KEYS)[number];
 
 const MAX_CONFIG_BYTES = 64 * 1024;
@@ -17,14 +19,14 @@ export function parseColorSchemes(config: string): ColorScheme[] {
 
     const saveCurrent = () => {
         if (!currentName || seenNames.has(currentName.toLowerCase())) return;
-        if (!COLOR_KEYS.every((key) => currentValues[key] && HEX_COLOR.test(currentValues[key]))) return;
+        if (!COLOR_KEYS.every(key => currentValues[key] && HEX_COLOR.test(currentValues[key]))) return;
         schemes.push({ name: currentName, ...(currentValues as Record<ColorKey, string>) });
         seenNames.add(currentName.toLowerCase());
     };
 
-    for (const rawLine of config.replace(/^\uFEFF/, '').split(/\r?\n/)) {
+    for (const rawLine of config.replace(/^\uFEFF/, "").split(/\r?\n/)) {
         const line = rawLine.trim();
-        if (!line || line.startsWith(';') || line.startsWith('#')) continue;
+        if (!line || line.startsWith(";") || line.startsWith("#")) continue;
         const section = /^\[([^\]]+)\]$/.exec(line);
         if (section) {
             saveCurrent();
@@ -32,7 +34,7 @@ export function parseColorSchemes(config: string): ColorScheme[] {
             currentValues = {};
             continue;
         }
-        const separator = line.indexOf('=');
+        const separator = line.indexOf("=");
         if (!currentName || separator < 0) continue;
         const key = line.slice(0, separator).trim().toLowerCase() as ColorKey;
         const value = line.slice(separator + 1).trim();
@@ -43,15 +45,15 @@ export function parseColorSchemes(config: string): ColorScheme[] {
 }
 
 function addMissingBuiltInSchemes(config: string, builtInSchemes: ColorScheme[]): string {
-    const existingNames = new Set(parseColorSchemes(config).map((scheme) => scheme.name.toLowerCase()));
-    const missing = builtInSchemes.filter((scheme) => !existingNames.has(scheme.name.toLowerCase()));
+    const existingNames = new Set(parseColorSchemes(config).map(scheme => scheme.name.toLowerCase()));
+    const missing = builtInSchemes.filter(scheme => !existingNames.has(scheme.name.toLowerCase()));
     if (!missing.length) return config;
 
     const newline = String.fromCharCode(10);
     const separator = `${newline}${newline}`;
     const additions = missing
-        .map((scheme) => {
-            const colors = COLOR_KEYS.map((key) => `${key} = ${scheme[key]}`).join(newline);
+        .map(scheme => {
+            const colors = COLOR_KEYS.map(key => `${key} = ${scheme[key]}`).join(newline);
             return `[${scheme.name}]${newline}${colors}`;
         })
         .join(separator);
@@ -63,46 +65,46 @@ export async function loadColorSchemes(): Promise<{
     schemes: ColorScheme[];
     usingDefaults: boolean;
 }> {
-    const shippedConfigPath = path.join(app.getAppPath(), 'colors.ini');
-    const shippedConfig = await readFile(shippedConfigPath, 'utf8');
+    const shippedConfigPath = path.join(app.getAppPath(), "colors.ini");
+    const shippedConfig = await readFile(shippedConfigPath, "utf8");
     const builtInSchemes = parseColorSchemes(shippedConfig);
     if (builtInSchemes.length === 0) throw new Error(`No valid color schemes found in ${shippedConfigPath}`);
 
-    const configPath = app.isPackaged ? path.join(app.getPath('userData'), 'colors.ini') : shippedConfigPath;
+    const configPath = app.isPackaged ? path.join(app.getPath("userData"), "colors.ini") : shippedConfigPath;
     await mkdir(path.dirname(configPath), { recursive: true });
 
     let config: string;
     try {
-        config = await readFile(configPath, 'utf8');
+        config = await readFile(configPath, "utf8");
     } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
         config = shippedConfig;
-        await writeFile(configPath, config, { encoding: 'utf8', flag: 'wx' }).catch(async (writeError) => {
-            if ((writeError as NodeJS.ErrnoException).code !== 'EEXIST') throw writeError;
-            config = await readFile(configPath, 'utf8');
+        await writeFile(configPath, config, { encoding: "utf8", flag: "wx" }).catch(async writeError => {
+            if ((writeError as NodeJS.ErrnoException).code !== "EEXIST") throw writeError;
+            config = await readFile(configPath, "utf8");
         });
     }
 
-    if (Buffer.byteLength(config, 'utf8') > MAX_CONFIG_BYTES) {
+    if (Buffer.byteLength(config, "utf8") > MAX_CONFIG_BYTES) {
         return { path: configPath, schemes: builtInSchemes, usingDefaults: true };
     }
 
     const updatedConfig = addMissingBuiltInSchemes(config, builtInSchemes);
-    if (updatedConfig !== config && Buffer.byteLength(updatedConfig, 'utf8') <= MAX_CONFIG_BYTES) {
+    if (updatedConfig !== config && Buffer.byteLength(updatedConfig, "utf8") <= MAX_CONFIG_BYTES) {
         const appendedContent = updatedConfig.slice(config.trimEnd().length);
-        await appendFile(configPath, appendedContent, 'utf8');
+        await appendFile(configPath, appendedContent, "utf8");
         config = updatedConfig;
     }
 
     const schemes = parseColorSchemes(config);
-    const existingNames = new Set(schemes.map((scheme) => scheme.name.toLowerCase()));
+    const existingNames = new Set(schemes.map(scheme => scheme.name.toLowerCase()));
     const availableSchemes = [
         ...schemes,
-        ...builtInSchemes.filter((scheme) => !existingNames.has(scheme.name.toLowerCase())),
+        ...builtInSchemes.filter(scheme => !existingNames.has(scheme.name.toLowerCase()))
     ];
     return {
         path: configPath,
         schemes: availableSchemes.length ? availableSchemes : builtInSchemes,
-        usingDefaults: schemes.length === 0,
+        usingDefaults: schemes.length === 0
     };
 }

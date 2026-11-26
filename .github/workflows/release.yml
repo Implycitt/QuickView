@@ -1,44 +1,44 @@
 name: Build and Release
 
 on:
-    push:
-        tags:
-            - 'v*'
+  push:
+    tags:
+      - "v*"
 
 jobs:
-    build-electron:
-        name: Build for ${{ matrix.os }}
-        runs-on: ${{ matrix.os }}
-        strategy:
-            matrix:
-                os: [macos-latest, ubuntu-latest, windows-latest]
+  build-electron:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: '24'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
 
-            - name: Setup bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: latest
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
-            - name: Install Dependencies
-              run: bun install
+      - name: Install Dependencies
+        run: bun install
 
-            - name: Build Code
-              run: bun run build
+      - name: Build Code
+        run: bun run build
 
-            - name: Compile and Package
-              run: bun run package
+      - name: Compile and Package
+        run: bun run package
 
-            - name: Upload to GitHub Release
-              uses: softprops/action-gh-release@v2
-              with:
-                  files: release/*.zip
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

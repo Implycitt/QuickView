@@ -1,26 +1,27 @@
-import { DOM, updateMagnifierClasses } from '../../ui/core/dom.js';
-import { isTypingTarget } from '../../ui/keyboard/shortcuts.js';
-import { PdfState } from './state.js';
+import { PdfState } from "./state.js";
+
+import { DOM, updateMagnifierClasses } from "../../ui/core/dom.js";
+import { isTypingTarget } from "../../ui/keyboard/shortcuts.js";
 
 const LENS_SIZE = 240;
 const DEFAULT_LENS_FACTOR_STEPS = 8;
 const MIN_LENS_FACTOR_STEPS = 5;
 const MAX_LENS_FACTOR_STEPS = 16;
 const LENS_FACTOR_STEP = 0.25;
-const LENS_FACTOR_STORAGE_KEY = 'quickview.magnifier-factor.v1';
+const LENS_FACTOR_STORAGE_KEY = "quickview.magnifier-factor.v1";
 const LENS_CURSOR_OFFSET = 20;
 const LENS_EDGE_MARGIN = 16;
 const MAX_LENS_SCALE = 2.5;
-const LENS_VIGNETTE = 'rgba(8, 9, 13, 0.16)';
+const LENS_VIGNETTE = "rgba(8, 9, 13, 0.16)";
 const FACTOR_BADGE_DURATION_MS = 1100;
 const WHEEL_STEP_DISTANCE = 40;
 const WHEEL_GESTURE_TIMEOUT_MS = 250;
 const SHARP_CROP_SCALE = 2;
 const SHARP_RENDER_INTERVAL_MS = 80;
 const SHARP_COVERAGE_EPSILON = 0.75;
-const MOMENTARY_KEY = 'c';
-const PDF_SCROLL_CONTAINER_ID = 'pdf-scroll-container';
-const PAGE_CONTAINER_SELECTOR = '.pdf-page-container';
+const MOMENTARY_KEY = "c";
+const PDF_SCROLL_CONTAINER_ID = "pdf-scroll-container";
+const PAGE_CONTAINER_SELECTOR = ".pdf-page-container";
 
 function readLensFactorSteps(): number {
     try {
@@ -33,7 +34,7 @@ function readLensFactorSteps(): number {
 }
 
 function formatLensFactor(steps: number): string {
-    return `${(steps * LENS_FACTOR_STEP).toFixed(2).replace(/\.?0+$/, '')}×`;
+    return `${(steps * LENS_FACTOR_STEP).toFixed(2).replace(/\.?0+$/, "")}×`;
 }
 
 interface MagnifierPage {
@@ -83,31 +84,31 @@ export function installPdfMagnifier() {
 
     function createOverlay() {
         const scale = Math.min(window.devicePixelRatio || 1, MAX_LENS_SCALE);
-        scrim = document.createElement('div');
-        scrim.className = 'pdf-magnifier-scrim';
-        scrim.setAttribute('aria-hidden', 'true');
+        scrim = document.createElement("div");
+        scrim.className = "pdf-magnifier-scrim";
+        scrim.setAttribute("aria-hidden", "true");
         scrim.style.width = `${LENS_SIZE}px`;
         scrim.style.height = `${LENS_SIZE}px`;
-        lens = document.createElement('div');
-        lens.className = 'pdf-magnifier';
-        lens.setAttribute('aria-hidden', 'true');
+        lens = document.createElement("div");
+        lens.className = "pdf-magnifier";
+        lens.setAttribute("aria-hidden", "true");
         lens.style.width = `${LENS_SIZE}px`;
         lens.style.height = `${LENS_SIZE}px`;
-        lensCanvas = document.createElement('canvas');
+        lensCanvas = document.createElement("canvas");
         lensCanvas.width = Math.round(LENS_SIZE * scale);
         lensCanvas.height = Math.round(LENS_SIZE * scale);
-        lensContext = lensCanvas.getContext('2d');
-        factorBadge = document.createElement('span');
-        factorBadge.className = 'pdf-magnifier-factor';
+        lensContext = lensCanvas.getContext("2d");
+        factorBadge = document.createElement("span");
+        factorBadge.className = "pdf-magnifier-factor";
         factorBadge.textContent = formatLensFactor(lensFactorSteps);
         lens.append(lensCanvas, factorBadge);
         document.body.append(scrim, lens);
     }
 
     function hideLens() {
-        lens?.removeAttribute('data-visible');
-        scrim?.removeAttribute('data-visible');
-        factorBadge?.removeAttribute('data-active');
+        lens?.removeAttribute("data-visible");
+        scrim?.removeAttribute("data-visible");
+        factorBadge?.removeAttribute("data-active");
         if (factorBadgeTimer !== null) {
             window.clearTimeout(factorBadgeTimer);
             factorBadgeTimer = null;
@@ -117,11 +118,11 @@ export function installPdfMagnifier() {
     function showLensFactor() {
         if (!factorBadge) return;
         factorBadge.textContent = formatLensFactor(lensFactorSteps);
-        factorBadge.setAttribute('data-active', 'true');
+        factorBadge.setAttribute("data-active", "true");
         if (factorBadgeTimer !== null) window.clearTimeout(factorBadgeTimer);
         factorBadgeTimer = window.setTimeout(() => {
             factorBadgeTimer = null;
-            factorBadge?.removeAttribute('data-active');
+            factorBadge?.removeAttribute("data-active");
         }, FACTOR_BADGE_DURATION_MS);
     }
 
@@ -155,7 +156,7 @@ export function installPdfMagnifier() {
         }
         const hit = document.elementFromPoint(pointerX, pointerY);
         const page = hit instanceof Element ? hit.closest<HTMLElement>(PAGE_CONTAINER_SELECTOR) : null;
-        const canvas = page?.querySelector('canvas');
+        const canvas = page?.querySelector("canvas");
         if (!(canvas instanceof HTMLCanvasElement)) return null;
         const rect = canvas.getBoundingClientRect();
         const pageNumber = Number(page?.dataset.pageNum);
@@ -171,10 +172,10 @@ export function installPdfMagnifier() {
         const top = Math.max(LENS_EDGE_MARGIN, Math.min(maxTop, pointerY + LENS_CURSOR_OFFSET));
         const translate = `${Math.round(left)}px ${Math.round(top)}px`;
         lens.style.translate = translate;
-        lens.setAttribute('data-visible', 'true');
+        lens.setAttribute("data-visible", "true");
         if (scrim) {
             scrim.style.translate = translate;
-            scrim.setAttribute('data-visible', 'true');
+            scrim.setAttribute("data-visible", "true");
         }
     }
 
@@ -215,10 +216,10 @@ export function installPdfMagnifier() {
         const scaleX = width / size;
         const scaleY = height / size;
         lensContext.setTransform(1, 0, 0, 1, 0, 0);
-        lensContext.fillStyle = '#ffffff';
+        lensContext.fillStyle = "#ffffff";
         lensContext.fillRect(0, 0, width, height);
         lensContext.imageSmoothingEnabled = true;
-        lensContext.imageSmoothingQuality = 'high';
+        lensContext.imageSmoothingQuality = "high";
         lensContext.drawImage(
             crop?.canvas ?? page.canvas,
             (left - imageLeft) * pixelsPerCssX,
@@ -228,11 +229,11 @@ export function installPdfMagnifier() {
             (left - windowLeft) * scaleX,
             (top - windowTop) * scaleY,
             (right - left) * scaleX,
-            (bottom - top) * scaleY,
+            (bottom - top) * scaleY
         );
         const radius = width / 2;
         const vignette = lensContext.createRadialGradient(radius, radius, radius * 0.68, radius, radius, radius);
-        vignette.addColorStop(0, 'rgba(8, 9, 13, 0)');
+        vignette.addColorStop(0, "rgba(8, 9, 13, 0)");
         vignette.addColorStop(1, LENS_VIGNETTE);
         lensContext.fillStyle = vignette;
         lensContext.fillRect(0, 0, width, height);
@@ -290,10 +291,10 @@ export function installPdfMagnifier() {
             if (!Number.isFinite(ratioX) || !Number.isFinite(ratioY) || ratioX <= 0 || ratioY <= 0) return;
             const outWidth = Math.max(1, Math.round(cropWidth * density));
             const outHeight = Math.max(1, Math.round(cropHeight * density));
-            if (!sharpCanvas) sharpCanvas = document.createElement('canvas');
+            if (!sharpCanvas) sharpCanvas = document.createElement("canvas");
             sharpCanvas.width = outWidth;
             sharpCanvas.height = outHeight;
-            const context = sharpCanvas.getContext('2d');
+            const context = sharpCanvas.getContext("2d");
             if (!context) return;
             const pixelsPerCssX = outWidth / cropWidth;
             const pixelsPerCssY = outHeight / cropHeight;
@@ -306,8 +307,8 @@ export function installPdfMagnifier() {
                     0,
                     pixelsPerCssY / ratioY,
                     -originX * pixelsPerCssX,
-                    -originY * pixelsPerCssY,
-                ],
+                    -originY * pixelsPerCssY
+                ]
             });
             sharpTask = task;
             try {
@@ -329,7 +330,7 @@ export function installPdfMagnifier() {
                 width: cropWidth,
                 height: cropHeight,
                 pixelsPerCssX,
-                pixelsPerCssY,
+                pixelsPerCssY
             };
             schedule();
         } catch {
@@ -403,7 +404,11 @@ export function installPdfMagnifier() {
 
     function onKeyDown(event: KeyboardEvent) {
         const holdingKey =
-            event.key.toLowerCase() === MOMENTARY_KEY && !event.repeat && !event.ctrlKey && !event.metaKey && !event.altKey;
+            event.key.toLowerCase() === MOMENTARY_KEY &&
+            !event.repeat &&
+            !event.ctrlKey &&
+            !event.metaKey &&
+            !event.altKey;
         if (holdingKey && !isTypingTarget(event.target)) {
             momentary = true;
             schedule();
@@ -411,9 +416,9 @@ export function installPdfMagnifier() {
         }
         if (isTypingTarget(event.target)) return;
         const direction =
-            event.key === ']' || event.code === 'BracketRight'
+            event.key === "]" || event.code === "BracketRight"
                 ? 1
-                : event.key === '[' || event.code === 'BracketLeft'
+                : event.key === "[" || event.code === "BracketLeft"
                   ? -1
                   : 0;
         if (direction === 0 || !isActive()) return;
@@ -454,14 +459,14 @@ export function installPdfMagnifier() {
         if (!enabled) hideLens();
     }
 
-    DOM.magnifierToggleBtn?.addEventListener('click', () => setEnabled(!enabled));
-    document.addEventListener('pointermove', onPointerMove, { passive: true });
-    document.addEventListener('pointerout', onPointerOut);
-    document.addEventListener('scroll', onScroll, { capture: true, passive: true });
-    document.addEventListener('wheel', onWheel, { capture: true, passive: false });
-    document.addEventListener('keydown', onKeyDown);
-    document.addEventListener('keyup', onKeyUp);
-    window.addEventListener('blur', onPointerLost);
-    window.addEventListener('blur', resetMomentary);
-    window.addEventListener('resize', onScroll);
+    DOM.magnifierToggleBtn?.addEventListener("click", () => setEnabled(!enabled));
+    document.addEventListener("pointermove", onPointerMove, { passive: true });
+    document.addEventListener("pointerout", onPointerOut);
+    document.addEventListener("scroll", onScroll, { capture: true, passive: true });
+    document.addEventListener("wheel", onWheel, { capture: true, passive: false });
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onPointerLost);
+    window.addEventListener("blur", resetMomentary);
+    window.addEventListener("resize", onScroll);
 }

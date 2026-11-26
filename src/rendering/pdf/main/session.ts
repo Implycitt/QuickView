@@ -1,12 +1,13 @@
-import { DOM, updateSpreadModeClasses } from '../../../ui/core/dom.js';
-import type { PdfLocation } from '../../../viewer/state.js';
-import type { PdfDocumentLike, PdfPageLike } from '../types.js';
-import { SPREAD_PAGE_GAP, type PdfPageLayout } from '../layout.js';
-import type { createPdfNavigation } from '../navigation.js';
-import type { createPdfOutline } from '../outline/controller.js';
-import type { MainPageRenderer } from './renderQueue.js';
-import type { createPdfMeasurement } from './measurement.js';
-import type { PdfViewport } from './viewport.js';
+import type { createPdfMeasurement } from "./measurement.js";
+import type { MainPageRenderer } from "./renderQueue.js";
+import type { PdfViewport } from "./viewport.js";
+
+import { DOM, updateSpreadModeClasses } from "../../../ui/core/dom.js";
+import type { PdfLocation } from "../../../viewer/state.js";
+import { SPREAD_PAGE_GAP, type PdfPageLayout } from "../layout.js";
+import type { createPdfNavigation } from "../navigation.js";
+import type { createPdfOutline } from "../outline/controller.js";
+import type { PdfDocumentLike, PdfPageLike } from "../types.js";
 
 interface PdfMainSessionDependencies {
     getDocument: () => PdfDocumentLike | null;
@@ -44,7 +45,7 @@ export function createPdfMainSession(deps: PdfMainSessionDependencies) {
         deps.mainPages.clear();
         deps.navigation.detachScrollContainer();
         const scroll = deps.layout.getScrollContainer();
-        scroll?.removeEventListener('scroll', deps.viewport.onMainScroll);
+        scroll?.removeEventListener("scroll", deps.viewport.onMainScroll);
         scroll?.remove();
         deps.layout.clearViewer();
         deps.outline.invalidateLayout();
@@ -63,10 +64,10 @@ export function createPdfMainSession(deps: PdfMainSessionDependencies) {
         deps.mainPages.resetRenderCost();
         deps.viewport.clearSettleTimer();
 
-        const scroll = document.createElement('div');
-        scroll.id = 'pdf-scroll-container';
+        const scroll = document.createElement("div");
+        scroll.id = "pdf-scroll-container";
         scroll.className =
-            'w-full h-full overflow-y-auto flex flex-col items-center py-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none';
+            "w-full h-full overflow-y-auto flex flex-col items-center py-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none";
         const doc = deps.getDocument();
         const content = DOM.mainContentNode;
         if (!doc || !content) return;
@@ -86,7 +87,7 @@ export function createPdfMainSession(deps: PdfMainSessionDependencies) {
             deps.layout.setPlaceholderPoints({ width: viewport.width, height: viewport.height });
             deps.layout.setPagePoints(1, { width: viewport.width, height: viewport.height });
         } catch (error) {
-            console.error('Error measuring first page:', error);
+            console.error("Error measuring first page:", error);
         }
         if (version !== viewerVersion) return;
         if (DOM.zoomLevelSpan) DOM.zoomLevelSpan.value = `${Math.round(deps.getScale() * 100)}%`;
@@ -96,18 +97,18 @@ export function createPdfMainSession(deps: PdfMainSessionDependencies) {
         }
         if (DOM.pageTotal) DOM.pageTotal.textContent = `/ ${total}`;
 
-        const topSpacer = document.createElement('div');
-        topSpacer.className = 'w-full shrink-0';
-        const bottomSpacer = document.createElement('div');
-        bottomSpacer.className = 'w-full shrink-0';
+        const topSpacer = document.createElement("div");
+        topSpacer.className = "w-full shrink-0";
+        const bottomSpacer = document.createElement("div");
+        bottomSpacer.className = "w-full shrink-0";
         scroll.append(topSpacer, bottomSpacer);
         const old = deps.layout.getScrollContainer();
         deps.layout.setViewer(scroll, total, topSpacer, bottomSpacer);
-        old?.removeEventListener('scroll', deps.viewport.onMainScroll);
+        old?.removeEventListener("scroll", deps.viewport.onMainScroll);
         old?.remove();
-        content.innerHTML = '';
+        content.innerHTML = "";
         content.appendChild(scroll);
-        scroll.addEventListener('scroll', deps.viewport.onMainScroll, { passive: true });
+        scroll.addEventListener("scroll", deps.viewport.onMainScroll, { passive: true });
         deps.navigation.attachScrollContainer(scroll);
 
         deps.layout.sampleLayout();
@@ -127,7 +128,7 @@ export function createPdfMainSession(deps: PdfMainSessionDependencies) {
                 deps.setSavedPosition(deps.viewport.captureScrollPos() ?? deps.getSavedPosition());
             }
             deps.setPendingRestore(null);
-            window.dispatchEvent(new Event('qv:pdf-layout-rendered'));
+            window.dispatchEvent(new Event("qv:pdf-layout-rendered"));
             deps.viewport.scheduleMainWindowRender();
         };
         finishMeasurementTimer = setTimeout(() => {
@@ -135,7 +136,7 @@ export function createPdfMainSession(deps: PdfMainSessionDependencies) {
             if (version !== viewerVersion) return;
             const anchor = Math.min(total, Math.max(1, restore?.page ?? deps.getLastKnownPage() ?? 1));
             void deps.measurement.measureWindow(anchor).then(finishMeasurement, (error: unknown) => {
-                if (version === viewerVersion) console.error('Error measuring PDF pages:', error);
+                if (version === viewerVersion) console.error("Error measuring PDF pages:", error);
                 finishMeasurement();
             });
         }, 0);
@@ -152,14 +153,14 @@ export function createPdfMainSession(deps: PdfMainSessionDependencies) {
     }
 
     function getFitToScreenScale(pages: PdfPageLike[], container: HTMLElement): number {
-        const viewports = pages.map((page) => page.getViewport({ scale: 1 }));
+        const viewports = pages.map(page => page.getViewport({ scale: 1 }));
         const padding = 64;
         const gap = pages.length > 1 ? SPREAD_PAGE_GAP : 0;
         const width = viewports.reduce((total, viewport) => total + viewport.width, 0) + gap;
         const height = viewports.reduce((tallest, viewport) => Math.max(tallest, viewport.height), 0);
         return Math.max(
             0.1,
-            Math.min((container.clientWidth - padding) / width, (container.clientHeight - padding) / height),
+            Math.min((container.clientWidth - padding) / width, (container.clientHeight - padding) / height)
         );
     }
 
@@ -167,7 +168,7 @@ export function createPdfMainSession(deps: PdfMainSessionDependencies) {
         if (deps.isSpreadMode() === enabled) return;
         deps.setSpreadMode(enabled);
         updateSpreadModeClasses(enabled);
-        window.dispatchEvent(new Event('qv:pdf-viewer-settings-changed'));
+        window.dispatchEvent(new Event("qv:pdf-viewer-settings-changed"));
         if (!deps.getDocument()) return;
         deps.setSavedPosition(deps.viewport.captureScrollPos() ?? deps.getSavedPosition());
         void renderAllMainPages();
@@ -179,6 +180,6 @@ export function createPdfMainSession(deps: PdfMainSessionDependencies) {
         getViewerVersion: () => viewerVersion,
         renderAllMainPages,
         resetViewer,
-        whenMainRenderIdle: () => mainRenderInFlight ?? Promise.resolve(),
+        whenMainRenderIdle: () => mainRenderInFlight ?? Promise.resolve()
     };
 }

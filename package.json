@@ -1,71 +1,71 @@
 {
-    "name": "quickview",
-    "version": "1.7.0",
-    "private": true,
-    "main": "dist-electron/main.js",
-    "author": "Quentin Bordelon",
-    "type": "module",
-    "scripts": {
-        "dev": "vite",
-        "build": "tsc && vite build",
-        "fmt": "oxfmt",
-        "fmt:ci": "oxfmt --check",
-        "lint": "oxlint",
-        "lint:ci": "oxlint --format=github",
-        "lint:fix": "oxlint --fix",
-        "preview": "vite preview",
-        "package": "electron-builder",
-        "typecheck": "tsc --noEmit"
+  "name": "quickview",
+  "version": "1.7.0",
+  "private": true,
+  "author": "Quentin Bordelon",
+  "type": "module",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "build": "tsc && vite build",
+    "dev": "vite",
+    "fmt": "oxfmt",
+    "fmt:ci": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:ci": "oxlint --format=github",
+    "lint:fix": "oxlint --fix",
+    "package": "electron-builder",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@nxenjs/discord-rich-presence": "^1.0.0",
+    "highlight.js": "^11.12.0",
+    "katex": "^0.18.9",
+    "markdown-it": "^15.0.2",
+    "markdown-it-texmath": "^1.0.0",
+    "pdfjs-dist": "4.10.38"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@tailwindcss/typography": "^0.5.20",
+    "@tailwindcss/vite": "^4.3.3",
+    "@typescript/native": "npm:typescript@7.0.2",
+    "electron": "^45.2.3",
+    "electron-builder": "^26.15.3",
+    "globals": "^17.12.0",
+    "oxfmt": "^0.80.0",
+    "oxlint": "^1.95.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript-eslint": "^8.70.1",
+    "vite": "^8.3.1",
+    "vite-plugin-electron": "^1.1.2",
+    "vite-plugin-electron-renderer": "^1.0.0"
+  },
+  "build": {
+    "appId": "com.quentin.quickview",
+    "productName": "QuickView",
+    "directories": {
+      "output": "release"
     },
-    "dependencies": {
-        "@nxenjs/discord-rich-presence": "^1.0.0",
-        "highlight.js": "^11.12.0",
-        "katex": "^0.18.9",
-        "markdown-it": "^15.0.2",
-        "markdown-it-texmath": "^1.0.0",
-        "pdfjs-dist": "4.10.38"
+    "publish": null,
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "colors.ini",
+      "package.json"
+    ],
+    "mac": {
+      "icon": "assets/icons/icon.icns",
+      "target": "zip"
     },
-    "devDependencies": {
-        "@eslint/js": "^10.0.1",
-        "@tailwindcss/typography": "^0.5.20",
-        "@tailwindcss/vite": "^4.3.3",
-        "@typescript/native": "npm:typescript@7.0.2",
-        "electron": "^45.2.3",
-        "electron-builder": "^26.15.3",
-        "globals": "^17.12.0",
-        "oxfmt": "^0.80.0",
-        "oxlint": "^1.95.0",
-        "tailwindcss": "^4.3.3",
-        "typescript": "npm:@typescript/typescript6@^6.0.2",
-        "typescript-eslint": "^8.70.1",
-        "vite": "^8.3.1",
-        "vite-plugin-electron": "^1.1.2",
-        "vite-plugin-electron-renderer": "^1.0.0"
+    "win": {
+      "icon": "assets/icons/icon.ico",
+      "target": "zip"
     },
-    "build": {
-        "appId": "com.quentin.quickview",
-        "productName": "QuickView",
-        "directories": {
-            "output": "release"
-        },
-        "publish": null,
-        "files": [
-            "dist/**/*",
-            "dist-electron/**/*",
-            "colors.ini",
-            "package.json"
-        ],
-        "mac": {
-            "icon": "assets/icons/icon.icns",
-            "target": "zip"
-        },
-        "win": {
-            "icon": "assets/icons/icon.ico",
-            "target": "zip"
-        },
-        "linux": {
-            "icon": "assets/icons/icon.png",
-            "target": "zip"
-        }
+    "linux": {
+      "icon": "assets/icons/icon.png",
+      "target": "zip"
     }
+  }
 }

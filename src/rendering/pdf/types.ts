@@ -24,7 +24,7 @@ export interface PdfJsModule {
     GlobalWorkerOptions: { workerSrc: string };
     PDFDataRangeTransport: new (
         length: number,
-        initialData: Uint8Array | null,
+        initialData: Uint8Array | null
     ) => {
         requestDataRange: (begin: number, end: number) => void;
         onDataRange: (begin: number, chunk: Uint8Array) => void;

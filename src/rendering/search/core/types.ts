@@ -16,4 +16,4 @@ export interface SearchResult {
     fuzzy: boolean;
 }
 
-export type SearchMode = 'pdf' | 'md';
+export type SearchMode = "pdf" | "md";

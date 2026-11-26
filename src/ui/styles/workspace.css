@@ -54,7 +54,7 @@
     border-radius: 0.2rem;
 }
 
-#toggle-magnifier[aria-pressed='true'] {
+#toggle-magnifier[aria-pressed="true"] {
     border-color: var(--qv-accent);
     background: color-mix(in srgb, var(--qv-accent) 16%, transparent);
     color: var(--qv-accent);
@@ -224,12 +224,12 @@
     background: color-mix(in srgb, var(--qv-accent) 5%, var(--qv-background));
 }
 
-.theme-option[aria-checked='true'] {
+.theme-option[aria-checked="true"] {
     border-color: var(--qv-accent);
     box-shadow: inset 3px 0 0 var(--qv-accent);
 }
 
-.theme-option[aria-checked='true'] .theme-option-detail {
+.theme-option[aria-checked="true"] .theme-option-detail {
     color: var(--qv-accent);
 }
 

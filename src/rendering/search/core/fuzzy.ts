@@ -1,10 +1,10 @@
-import { normalize } from './query.js';
-import type { PageMatch } from './types.js';
+import { normalize } from "./query.js";
+import type { PageMatch } from "./types.js";
 
 const NGRAM_SIZE = 3;
-const PADDING_START = '$$';
-const PADDING_WORD = '!$$';
-const PADDING_END = '!';
+const PADDING_START = "$$";
+const PADDING_WORD = "!$$";
+const PADDING_END = "!";
 const MIN_FUZZY_SIMILARITY = 0.5;
 const WORD_CHARACTER = /[\p{L}\p{N}]/u;
 
@@ -13,13 +13,13 @@ export interface TextMatch extends PageMatch {
 }
 
 function ngrams(value: string): Set<string> {
-    const padded = PADDING_START + value.replaceAll(' ', PADDING_WORD) + PADDING_END;
+    const padded = PADDING_START + value.replaceAll(" ", PADDING_WORD) + PADDING_END;
     const grams = new Set<string>();
 
     for (let index = 0; index <= padded.length - NGRAM_SIZE; index++) {
         const gram = padded.slice(index, index + NGRAM_SIZE);
-        if (gram.endsWith('$')) continue;
-        grams.add(gram.includes('$') ? gram : [...gram].sort().join(''));
+        if (gram.endsWith("$")) continue;
+        grams.add(gram.includes("$") ? gram : [...gram].sort().join(""));
     }
 
     return grams;
@@ -28,7 +28,7 @@ function ngrams(value: string): Set<string> {
 function fuzzySimilarity(token: string, word: string): number {
     const tokenGrams = ngrams(token);
     const wordGrams = ngrams(word);
-    const shared = [...tokenGrams].filter((gram) => wordGrams.has(gram)).length;
+    const shared = [...tokenGrams].filter(gram => wordGrams.has(gram)).length;
     return shared / Math.max(tokenGrams.size, wordGrams.size);
 }
 

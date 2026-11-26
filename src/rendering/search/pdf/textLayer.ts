@@ -1,9 +1,10 @@
-import { loadPdfjs } from '../../pdf/pdfjs.js';
-import { PdfState } from '../../pdf/state.js';
-import type { PdfPageLike, PdfViewport } from '../../pdf/types.js';
-import { applyPdfHighlights } from '../ui/highlights.js';
-import { resolvePendingSearchScroll } from '../ui/navigation.js';
-import { buildPageIndex, pageIndexes, setPageIndex } from './pageIndexStore.js';
+import { buildPageIndex, pageIndexes, setPageIndex } from "./pageIndexStore.js";
+
+import { loadPdfjs } from "../../pdf/pdfjs.js";
+import { PdfState } from "../../pdf/state.js";
+import type { PdfPageLike, PdfViewport } from "../../pdf/types.js";
+import { applyPdfHighlights } from "../ui/highlights.js";
+import { resolvePendingSearchScroll } from "../ui/navigation.js";
 
 export function setPageSpans(pageNum: number, spans: (HTMLElement | null)[]) {
     const index = pageIndexes.get(pageNum);
@@ -23,11 +24,11 @@ export async function renderPageTextLayer(
     page: PdfPageLike,
     container: HTMLElement,
     viewport: PdfViewport,
-    pageNum: number,
+    pageNum: number
 ): Promise<void> {
-    const layer = document.createElement('div');
-    layer.className = 'text-layer';
-    layer.style.setProperty('--scale-factor', String(viewport.scale || PdfState.currentScale || 1));
+    const layer = document.createElement("div");
+    layer.className = "text-layer";
+    layer.style.setProperty("--scale-factor", String(viewport.scale || PdfState.currentScale || 1));
     try {
         const pdfjsLib = await loadPdfjs();
         const textContent = await page.getTextContent();
@@ -45,7 +46,7 @@ export async function renderPageTextLayer(
         }
         setPageSpans(
             pageNum,
-            textLayer.textDivs.map((div: HTMLElement) => (div?.isConnected ? div : null)),
+            textLayer.textDivs.map((div: HTMLElement) => (div?.isConnected ? div : null))
         );
     } catch {
         layer.remove();

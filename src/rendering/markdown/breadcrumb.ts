@@ -1,21 +1,21 @@
-import { DOM } from '../../ui/core/dom.js';
-import { BREADCRUMB_SEPARATOR, setBreadcrumbPath } from '../../ui/core/breadcrumb.js';
+import { BREADCRUMB_SEPARATOR, setBreadcrumbPath } from "../../ui/core/breadcrumb.js";
+import { DOM } from "../../ui/core/dom.js";
 
 let mdFileName: string | null = null;
 let mdHeadings: HTMLElement[] = [];
 let mdScroller: HTMLElement | null = null;
 
 export function initMdBreadcrumb(fileName: string, scroller: HTMLElement) {
-    if (mdScroller && mdScroller !== scroller) mdScroller.removeEventListener('scroll', syncMdBreadcrumb);
+    if (mdScroller && mdScroller !== scroller) mdScroller.removeEventListener("scroll", syncMdBreadcrumb);
     mdFileName = fileName;
-    mdHeadings = Array.from(scroller.querySelectorAll<HTMLElement>('h1, h2, h3, h4, h5, h6'));
-    if (mdScroller !== scroller) scroller.addEventListener('scroll', syncMdBreadcrumb, { passive: true });
+    mdHeadings = Array.from(scroller.querySelectorAll<HTMLElement>("h1, h2, h3, h4, h5, h6"));
+    if (mdScroller !== scroller) scroller.addEventListener("scroll", syncMdBreadcrumb, { passive: true });
     mdScroller = scroller;
     syncMdBreadcrumb();
 }
 
 export function clearMdBreadcrumb() {
-    mdScroller?.removeEventListener('scroll', syncMdBreadcrumb);
+    mdScroller?.removeEventListener("scroll", syncMdBreadcrumb);
     mdScroller = null;
     mdFileName = null;
     mdHeadings = [];
@@ -32,11 +32,11 @@ function headingPath(index: number): string[] {
     for (let i = index - 1; i >= 0; i--) {
         const level = headingLevel(mdHeadings[i]);
         if (level < minLevel) {
-            path.unshift(mdHeadings[i].textContent?.trim() || '(untitled)');
+            path.unshift(mdHeadings[i].textContent?.trim() || "(untitled)");
             minLevel = level;
         }
     }
-    path.push(mdHeadings[index].textContent?.trim() || '(untitled)');
+    path.push(mdHeadings[index].textContent?.trim() || "(untitled)");
     return path;
 }
 

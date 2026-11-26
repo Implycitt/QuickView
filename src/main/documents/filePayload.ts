@@ -1,6 +1,7 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import type { FileResponse } from '../../types/types.d.ts';
+import fs from "node:fs";
+import path from "node:path";
+
+import type { FileResponse } from "../../types/types.d.ts";
 
 const PDF_CACHE_LIMIT = 3;
 const pdfCache = new Map<string, { size: number; mtimeMs: number; data: Buffer }>();
@@ -27,12 +28,12 @@ async function readPdfCached(targetPath: string): Promise<Buffer> {
 export async function readFilePayload(targetPath: string): Promise<FileResponse> {
     const fileName = path.basename(targetPath);
     const extension = path.extname(fileName).toLowerCase();
-    if (extension === '.md' || extension === '.html' || extension === '.htm') {
-        const content = await fs.promises.readFile(targetPath, 'utf-8');
+    if (extension === ".md" || extension === ".html" || extension === ".htm") {
+        const content = await fs.promises.readFile(targetPath, "utf-8");
         return { name: fileName, path: targetPath, content };
     }
 
-    if (extension === '.pdf') {
+    if (extension === ".pdf") {
         const data = await readPdfCached(targetPath);
         return { name: fileName, path: targetPath, data };
     }
@@ -42,13 +43,13 @@ export async function readFilePayload(targetPath: string): Promise<FileResponse>
 }
 
 export async function validateDocumentPath(targetPath: unknown): Promise<string> {
-    if (typeof targetPath !== 'string' || !path.isAbsolute(targetPath)) {
-        throw new Error('A valid absolute file path is required.');
+    if (typeof targetPath !== "string" || !path.isAbsolute(targetPath)) {
+        throw new Error("A valid absolute file path is required.");
     }
 
     const extension = path.extname(targetPath).toLowerCase();
-    if (!['.md', '.pdf', '.html', '.htm'].includes(extension)) {
-        throw new Error('QuickView only opens Markdown, PDF, and HTML documents.');
+    if (![".md", ".pdf", ".html", ".htm"].includes(extension)) {
+        throw new Error("QuickView only opens Markdown, PDF, and HTML documents.");
     }
 
     await fs.promises.access(targetPath, fs.constants.R_OK);

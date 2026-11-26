@@ -1,13 +1,13 @@
-import { DOM } from '../core/dom.js';
 import {
     getPdfFitWidth,
     refreshSidebarSync,
     renderAllMainPages,
     renderThumbnails,
     setSidebarFollowSuppressed,
-    whenMainRenderIdle,
-} from '../../rendering/pdf/renderer.js';
-import { PdfState } from '../../rendering/pdf/state.js';
+    whenMainRenderIdle
+} from "../../rendering/pdf/renderer.js";
+import { PdfState } from "../../rendering/pdf/state.js";
+import { DOM } from "../core/dom.js";
 
 const CONTENT_REFIT_DELAY_MS = 300;
 const CONTENT_WIDTH_TOLERANCE = 4;
@@ -18,7 +18,7 @@ interface ResizeDependencies {
 
 export function installViewerResizeHandlers({ scheduleViewerStateSave }: ResizeDependencies) {
     let windowTimer: ReturnType<typeof setTimeout> | null = null;
-    window.addEventListener('resize', () => {
+    window.addEventListener("resize", () => {
         if (!PdfState.currentPdfDoc) return;
         if (windowTimer) clearTimeout(windowTimer);
         windowTimer = setTimeout(async () => {
@@ -35,7 +35,7 @@ export function installViewerResizeHandlers({ scheduleViewerStateSave }: ResizeD
     });
 
     const dprQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
-    dprQuery.addEventListener('change', () => {
+    dprQuery.addEventListener("change", () => {
         if (!PdfState.currentPdfDoc) return;
         setSidebarFollowSuppressed(true);
         void renderAllMainPages().then(() => {
@@ -48,7 +48,7 @@ export function installViewerResizeHandlers({ scheduleViewerStateSave }: ResizeD
 
     let contentTimer: ReturnType<typeof setTimeout> | null = null;
     const refitToContentWidth = () => {
-        if (!PdfState.currentPdfDoc || PdfState.zoomMode !== 'auto') return;
+        if (!PdfState.currentPdfDoc || PdfState.zoomMode !== "auto") return;
         if (Math.abs(DOM.mainContentNode.clientWidth - getPdfFitWidth()) < CONTENT_WIDTH_TOLERANCE) return;
         if (contentTimer) clearTimeout(contentTimer);
         contentTimer = setTimeout(async () => {
@@ -61,10 +61,10 @@ export function installViewerResizeHandlers({ scheduleViewerStateSave }: ResizeD
             scheduleViewerStateSave();
         }, CONTENT_REFIT_DELAY_MS);
     };
-    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(refitToContentWidth).observe(DOM.mainContentNode);
+    if (typeof ResizeObserver !== "undefined") new ResizeObserver(refitToContentWidth).observe(DOM.mainContentNode);
 
     let sidebarTimer: ReturnType<typeof setTimeout> | null = null;
-    window.addEventListener('qv:sidebar-resized', () => {
+    window.addEventListener("qv:sidebar-resized", () => {
         if (!PdfState.currentPdfDoc) return;
         if (sidebarTimer) clearTimeout(sidebarTimer);
         sidebarTimer = setTimeout(() => {

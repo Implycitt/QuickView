@@ -1,4 +1,4 @@
-import type { PdfDocumentLike } from '../types.js';
+import type { PdfDocumentLike } from "../types.js";
 
 export interface OutlineTarget {
     page: number;

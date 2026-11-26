@@ -1,6 +1,6 @@
-import { addPageLinkLayer } from '../links.js';
-import type { PdfDocumentLike, PdfPageLike, PdfViewport } from '../types.js';
-import type { PdfPageLayout } from '../layout.js';
+import type { PdfPageLayout } from "../layout.js";
+import { addPageLinkLayer } from "../links.js";
+import type { PdfDocumentLike, PdfPageLike, PdfViewport } from "../types.js";
 
 const MAX_CANVAS_PIXELS = 8_500_000;
 const SEQUENTIAL_RENDER_THRESHOLD_MS = 900;
@@ -14,14 +14,14 @@ interface PendingRender {
 interface MainPageRendererDependencies {
     getDocument: () => PdfDocumentLike | null;
     getScale: () => number;
-    layout: Pick<PdfPageLayout, 'getPageContainer' | 'setPagePoints'>;
+    layout: Pick<PdfPageLayout, "getPageContainer" | "setPagePoints">;
     getOutputScale: () => number;
     renderConcurrency: number;
     renderTextLayer: (
         page: PdfPageLike,
         container: HTMLElement,
         viewport: PdfViewport,
-        pageNumber: number,
+        pageNumber: number
     ) => Promise<void>;
     clearPageSpans: (pageNumber: number) => void;
     resolveDestination: (destination: unknown) => Promise<{ page: number; y: number | null } | null>;
@@ -60,7 +60,7 @@ export function createMainPageRenderer(deps: MainPageRendererDependencies) {
             entry.canvas?.remove();
             pendingRenders.delete(pageNumber);
         }
-        renderQueue = renderQueue.filter((queuedPage) => queuedPage !== pageNumber);
+        renderQueue = renderQueue.filter(queuedPage => queuedPage !== pageNumber);
         renderedCanvases.delete(pageNumber);
         deps.clearPageSpans(pageNumber);
         releasePage(pageNumber);
@@ -165,12 +165,12 @@ export function createMainPageRenderer(deps: MainPageRendererDependencies) {
             const viewport = page.getViewport({ scale: deps.getScale() });
             const scale = deps.getScale() || 1;
             deps.layout.setPagePoints(pageNumber, { width: viewport.width / scale, height: viewport.height / scale });
-            canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
+            canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
             if (!context) return;
             const outputScale = Math.min(
                 deps.getOutputScale(),
-                Math.sqrt(MAX_CANVAS_PIXELS / Math.max(1, viewport.width * viewport.height)),
+                Math.sqrt(MAX_CANVAS_PIXELS / Math.max(1, viewport.width * viewport.height))
             );
             canvas.width = Math.max(1, Math.ceil(viewport.width * outputScale));
             canvas.height = Math.max(1, Math.ceil(viewport.height * outputScale));
@@ -224,7 +224,7 @@ export function createMainPageRenderer(deps: MainPageRendererDependencies) {
     }
 
     function retainQueuedPages(first: number, last: number) {
-        renderQueue = renderQueue.filter((pageNumber) => pageNumber >= first && pageNumber <= last);
+        renderQueue = renderQueue.filter(pageNumber => pageNumber >= first && pageNumber <= last);
     }
 
     return {
@@ -236,14 +236,14 @@ export function createMainPageRenderer(deps: MainPageRendererDependencies) {
             pendingCount: pendingRenders.size,
             activeCount: activeRenders,
             critical: hasCriticalWork(),
-            firstPaintPending: renderedCanvases.size === 0 && activeRenders === 0,
+            firstPaintPending: renderedCanvases.size === 0 && activeRenders === 0
         }),
         onPageUnmounted,
         pump,
         queuePage,
         releasePage,
         resetRenderCost,
-        retainQueuedPages,
+        retainQueuedPages
     };
 }
 

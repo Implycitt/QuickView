@@ -1,6 +1,6 @@
-import { registerPdfNavigation } from './state.js';
-import { createPdfViewerServices, type PdfViewerState } from './main/factory.js';
-import { createPdfLifecycle } from './main/lifecycle.js';
+import { createPdfViewerServices, type PdfViewerState } from "./main/factory.js";
+import { createPdfLifecycle } from "./main/lifecycle.js";
+import { registerPdfNavigation } from "./state.js";
 
 const state: PdfViewerState = { savedScrollPos: null, pendingRestoreLocation: null, lastKnownPage: 1 };
 const services = createPdfViewerServices(state);
@@ -8,7 +8,7 @@ const lifecycle = createPdfLifecycle(state, services);
 
 registerPdfNavigation({
     jumpToPage: services.navigation.jumpToPage,
-    isViewerBusy: services.viewport.isViewerBusy,
+    isViewerBusy: services.viewport.isViewerBusy
 });
 
 export const whenMainRenderIdle = services.session.whenMainRenderIdle;

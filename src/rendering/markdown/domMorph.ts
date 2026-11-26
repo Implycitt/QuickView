@@ -1,33 +1,33 @@
 function mediaResourceKey(element: Element): string | null {
     const tag = element.tagName.toLowerCase();
     const attributes: Record<string, string[]> = {
-        img: ['src', 'srcset', 'sizes', 'crossorigin', 'referrerpolicy'],
-        iframe: ['src', 'srcdoc', 'sandbox', 'allow', 'allowfullscreen', 'credentialless', 'referrerpolicy'],
-        source: ['src', 'srcset', 'sizes', 'type', 'media'],
-        track: ['src', 'kind', 'srclang', 'label'],
-        embed: ['src', 'type'],
-        object: ['data', 'type', 'codebase', 'classid'],
-        image: ['href', 'xlink:href'],
+        img: ["src", "srcset", "sizes", "crossorigin", "referrerpolicy"],
+        iframe: ["src", "srcdoc", "sandbox", "allow", "allowfullscreen", "credentialless", "referrerpolicy"],
+        source: ["src", "srcset", "sizes", "type", "media"],
+        track: ["src", "kind", "srclang", "label"],
+        embed: ["src", "type"],
+        object: ["data", "type", "codebase", "classid"],
+        image: ["href", "xlink:href"]
     };
 
-    if (tag === 'audio' || tag === 'video') {
+    if (tag === "audio" || tag === "video") {
         const sources = Array.from(element.children)
-            .filter((child) => child.tagName.toLowerCase() === 'source')
+            .filter(child => child.tagName.toLowerCase() === "source")
             .map(mediaResourceKey)
             .sort();
-        return `${tag}:${JSON.stringify([element.getAttribute('src'), element.getAttribute('poster'), element.getAttribute('crossorigin'), sources])}`;
+        return `${tag}:${JSON.stringify([element.getAttribute("src"), element.getAttribute("poster"), element.getAttribute("crossorigin"), sources])}`;
     }
 
-    if (tag === 'object') {
-        const params = Array.from(element.querySelectorAll('param')).map((param) => [
-            param.getAttribute('name'),
-            param.getAttribute('value'),
+    if (tag === "object") {
+        const params = Array.from(element.querySelectorAll("param")).map(param => [
+            param.getAttribute("name"),
+            param.getAttribute("value")
         ]);
-        return `${tag}:${JSON.stringify([...(attributes[tag] ?? []).map((name) => element.getAttribute(name)), params])}`;
+        return `${tag}:${JSON.stringify([...(attributes[tag] ?? []).map(name => element.getAttribute(name)), params])}`;
     }
 
     const names = attributes[tag];
-    return names ? `${tag}:${JSON.stringify(names.map((name) => element.getAttribute(name)))}` : null;
+    return names ? `${tag}:${JSON.stringify(names.map(name => element.getAttribute(name)))}` : null;
 }
 
 function mediaTreeKey(element: Element, cache: WeakMap<Node, string | null>): string | null {
@@ -39,7 +39,7 @@ function mediaTreeKey(element: Element, cache: WeakMap<Node, string | null>): st
         return ownKey;
     }
 
-    const descendants = Array.from(element.children).flatMap((child) => {
+    const descendants = Array.from(element.children).flatMap(child => {
         const childKey = mediaTreeKey(child, cache);
         return childKey ? [`${child.tagName.toLowerCase()}:${childKey}`] : [];
     });
@@ -74,7 +74,7 @@ function canMorphNode(
     current: Node,
     target: Node,
     currentKeys: WeakMap<Node, string | null>,
-    targetKeys: WeakMap<Node, string | null>,
+    targetKeys: WeakMap<Node, string | null>
 ): boolean {
     if (!sameNodeShape(current, target)) return false;
     const currentKey = stableNodeKey(current, currentKeys);
@@ -97,7 +97,7 @@ function morphChildren(currentParent: Node, targetParent: Node) {
     const desiredChildren = Array.from(targetParent.childNodes);
     const currentKeys = new WeakMap<Node, string | null>();
     const targetKeys = new WeakMap<Node, string | null>();
-    const desiredKeys = desiredChildren.map((child) => stableNodeKey(child, targetKeys));
+    const desiredKeys = desiredChildren.map(child => stableNodeKey(child, targetKeys));
     const lastIndexOfKey = new Map<string, number>();
     for (let index = 0; index < desiredKeys.length; index++) {
         const key = desiredKeys[index];
@@ -191,7 +191,7 @@ function morphNode(current: Node, target: Node) {
 }
 
 export function updateMarkdownArticle(article: HTMLElement, html: string) {
-    const template = document.createElement('template');
+    const template = document.createElement("template");
     template.innerHTML = html;
     morphChildren(article, template.content);
 }
@@ -209,7 +209,7 @@ export function isLargeMarkdownDocument(chunks: string[]): boolean {
 }
 
 function nextPaint(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
         const timer = setTimeout(resolve, 50);
         requestAnimationFrame(() => {
             clearTimeout(timer);
@@ -221,18 +221,18 @@ function nextPaint(): Promise<void> {
 export async function insertMarkdownChunks(
     article: HTMLElement,
     chunks: string[],
-    isStale: () => boolean,
+    isStale: () => boolean
 ): Promise<boolean> {
     article.replaceChildren();
-    let batch = '';
+    let batch = "";
     for (const chunk of chunks) {
         if (isStale()) return false;
         batch += chunk;
         if (batch.length < INSERTION_BATCH_CHARACTERS) continue;
-        article.insertAdjacentHTML('beforeend', batch);
-        batch = '';
+        article.insertAdjacentHTML("beforeend", batch);
+        batch = "";
         await nextPaint();
     }
-    if (batch) article.insertAdjacentHTML('beforeend', batch);
+    if (batch) article.insertAdjacentHTML("beforeend", batch);
     return true;
 }

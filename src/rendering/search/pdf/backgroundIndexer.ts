@@ -1,5 +1,6 @@
-import { PdfState, isPdfViewerBusy } from '../../pdf/state.js';
-import { ensureIndexed, indexVersion, pageIndexes } from './pageIndexStore.js';
+import { ensureIndexed, indexVersion, pageIndexes } from "./pageIndexStore.js";
+
+import { PdfState, isPdfViewerBusy } from "../../pdf/state.js";
 
 const INDEX_BATCH = 4;
 const INDEX_IDLE_TIMEOUT = 400;
@@ -14,7 +15,7 @@ export function startBackgroundIndex() {
 
     const schedule = (fn: () => void, delay: number) => {
         if (delay > 0) setTimeout(fn, delay);
-        else if (typeof requestIdleCallback === 'function') {
+        else if (typeof requestIdleCallback === "function") {
             requestIdleCallback(fn, { timeout: INDEX_IDLE_TIMEOUT });
         } else setTimeout(fn, 0);
     };

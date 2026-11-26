@@ -1,7 +1,7 @@
-import { jumpToPdfPage } from '../../pdf/state.js';
-import type { SearchResult } from '../core/types.js';
-import { markdownBlocks } from '../markdown/index.js';
-import { pageIndexes } from '../pdf/pageIndexStore.js';
+import { jumpToPdfPage } from "../../pdf/state.js";
+import type { SearchResult } from "../core/types.js";
+import { markdownBlocks } from "../markdown/index.js";
+import { pageIndexes } from "../pdf/pageIndexStore.js";
 
 let pendingScroll: { page: number; start: number; end: number } | null = null;
 
@@ -9,9 +9,9 @@ export function clearPendingSearchScroll() {
     pendingScroll = null;
 }
 
-export function jumpToSearchResult(result: SearchResult, mode: 'pdf' | 'md') {
-    if (mode === 'md') {
-        markdownBlocks[result.page]?.element.scrollIntoView({ block: 'center' });
+export function jumpToSearchResult(result: SearchResult, mode: "pdf" | "md") {
+    if (mode === "md") {
+        markdownBlocks[result.page]?.element.scrollIntoView({ block: "center" });
         return;
     }
 
@@ -28,7 +28,7 @@ function textSpanY(
     spans: (HTMLElement | null)[],
     ranges: { start: number; end: number }[],
     start: number,
-    end: number,
+    end: number
 ): number | null {
     for (let index = 0; index < ranges.length; index++) {
         if (ranges[index].end <= start || ranges[index].start >= end) continue;

@@ -11,7 +11,7 @@ export function scrollInstantly(container: HTMLElement, top: number): void {
     const maxScroll = Math.max(0, container.scrollHeight - container.clientHeight);
     const target = Math.max(0, Math.min(maxScroll, top));
     if (Math.abs(target - container.scrollTop) < MIN_SCROLL_DELTA) return;
-    container.style.scrollBehavior = 'auto';
+    container.style.scrollBehavior = "auto";
     container.scrollTop = target;
-    container.style.removeProperty('scroll-behavior');
+    container.style.removeProperty("scroll-behavior");
 }

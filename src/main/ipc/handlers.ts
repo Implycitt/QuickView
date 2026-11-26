@@ -1,25 +1,26 @@
-import { BrowserWindow, dialog, ipcMain, shell } from 'electron';
-import fs from 'node:fs';
-import path from 'node:path';
+import { BrowserWindow, dialog, ipcMain, shell } from "electron";
+
+import fs from "node:fs";
+import path from "node:path";
 
 const MAX_RANGE_BYTES = 8 * 1024 * 1024;
-import { readFilePayload, validateDocumentPath } from '../documents/filePayload.js';
-import { watchDocument } from '../documents/fileWatcher.js';
-import { loadColorSchemes } from '../preferences/colorSchemes.js';
-import { setAllowedAssetRoot } from '../protocol/assetProtocol.js';
+import { readFilePayload, validateDocumentPath } from "../documents/filePayload.js";
+import { watchDocument } from "../documents/fileWatcher.js";
+import { loadColorSchemes } from "../preferences/colorSchemes.js";
+import { setAllowedAssetRoot } from "../protocol/assetProtocol.js";
 
 export function registerIpcHandlers(launchPath: string | null) {
     let launchPathDelivered = false;
 
-    ipcMain.handle('preferences:get-color-schemes', () => loadColorSchemes());
-    ipcMain.handle('preferences:open-color-schemes', async () => {
+    ipcMain.handle("preferences:get-color-schemes", () => loadColorSchemes());
+    ipcMain.handle("preferences:open-color-schemes", async () => {
         const { path: configPath } = await loadColorSchemes();
         const error = await shell.openPath(configPath);
         if (error) shell.showItemInFolder(configPath);
         return error;
     });
 
-    ipcMain.handle('file:get-launch-path', () => {
+    ipcMain.handle("file:get-launch-path", () => {
         if (launchPathDelivered) return null;
         launchPathDelivered = true;
         return launchPath ? path.resolve(launchPath) : null;
@@ -32,15 +33,15 @@ export function registerIpcHandlers(launchPath: string | null) {
         return payload;
     }
 
-    ipcMain.handle('file:read', (event, targetPath: string) => readAndWatchDocument(targetPath, event.sender));
+    ipcMain.handle("file:read", (event, targetPath: string) => readAndWatchDocument(targetPath, event.sender));
 
-    ipcMain.handle('file:read-range', async (_event, targetPath: string, begin: number, end: number) => {
+    ipcMain.handle("file:read-range", async (_event, targetPath: string, begin: number, end: number) => {
         const validPath = await validateDocumentPath(targetPath);
         if (!Number.isSafeInteger(begin) || !Number.isSafeInteger(end) || begin < 0 || end <= begin) {
-            throw new Error('Invalid byte range.');
+            throw new Error("Invalid byte range.");
         }
         const length = Math.min(end - begin, MAX_RANGE_BYTES);
-        const handle = await fs.promises.open(validPath, 'r');
+        const handle = await fs.promises.open(validPath, "r");
         try {
             const buffer = Buffer.alloc(length);
             const { bytesRead } = await handle.read(buffer, 0, length, begin);
@@ -50,41 +51,41 @@ export function registerIpcHandlers(launchPath: string | null) {
         }
     });
 
-    ipcMain.handle('file:pick-and-read', async (event) => {
+    ipcMain.handle("file:pick-and-read", async event => {
         const { canceled, filePaths } = await dialog.showOpenDialog({
-            properties: ['openFile'],
-            filters: [{ name: 'Documents', extensions: ['md', 'pdf', 'html', 'htm'] }],
+            properties: ["openFile"],
+            filters: [{ name: "Documents", extensions: ["md", "pdf", "html", "htm"] }]
         });
         if (canceled || filePaths.length === 0) return null;
 
         return readAndWatchDocument(filePaths[0], event.sender);
     });
 
-    ipcMain.on('window:minimize', (event) => {
+    ipcMain.on("window:minimize", event => {
         BrowserWindow.fromWebContents(event.sender)?.minimize();
     });
-    ipcMain.on('window:toggle-maximize', (event) => {
+    ipcMain.on("window:toggle-maximize", event => {
         const target = BrowserWindow.fromWebContents(event.sender);
         if (!target) return;
         if (target.isMaximized()) target.unmaximize();
         else target.maximize();
     });
-    ipcMain.on('window:close', (event) => {
+    ipcMain.on("window:close", event => {
         BrowserWindow.fromWebContents(event.sender)?.close();
     });
-    ipcMain.handle('window:get-state', (event) => {
+    ipcMain.handle("window:get-state", event => {
         const target = BrowserWindow.fromWebContents(event.sender);
         return { maximized: target?.isMaximized() ?? false };
     });
 
-    ipcMain.handle('shell:open-external', async (_event, rawUrl: string) => {
-        if (typeof rawUrl !== 'string') return;
+    ipcMain.handle("shell:open-external", async (_event, rawUrl: string) => {
+        if (typeof rawUrl !== "string") return;
         let parsed: URL;
         try {
             parsed = new URL(rawUrl);
         } catch {
             return;
         }
-        if (['http:', 'https:', 'mailto:'].includes(parsed.protocol)) await shell.openExternal(rawUrl);
+        if (["http:", "https:", "mailto:"].includes(parsed.protocol)) await shell.openExternal(rawUrl);
     });
 }

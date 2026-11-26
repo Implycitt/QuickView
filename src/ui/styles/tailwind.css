@@ -27,7 +27,7 @@
 }
 
 /* Set by the theme picker whenever the active scheme has a light background. */
-:root[data-qv-scheme='light'] {
+:root[data-qv-scheme="light"] {
     --qv-code-keyword: oklch(0.46 0.16 300);
     --qv-code-string: oklch(0.44 0.13 150);
     --qv-code-number: oklch(0.48 0.12 75);
@@ -41,9 +41,9 @@
 
 @theme {
     --font-sans:
-        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', Arial, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
     --color-red-400: oklch(70.4% 0.191 22.216);
     --color-red-500: oklch(63.7% 0.237 25.331);

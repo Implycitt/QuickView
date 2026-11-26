@@ -16,7 +16,7 @@ body.qv-magnifier-on .pdf-page-container {
     transition: opacity 150ms ease-out;
 }
 
-.pdf-magnifier-scrim[data-visible='true'] {
+.pdf-magnifier-scrim[data-visible="true"] {
     opacity: 1;
 }
 
@@ -41,7 +41,7 @@ body.qv-magnifier-on .pdf-page-container {
     will-change: translate, scale, opacity;
 }
 
-.pdf-magnifier[data-visible='true'] {
+.pdf-magnifier[data-visible="true"] {
     opacity: 1;
     scale: 1;
 }
@@ -74,7 +74,7 @@ body.qv-magnifier-on .pdf-page-container {
         translate 180ms ease-out;
 }
 
-.pdf-magnifier-factor[data-active='true'] {
+.pdf-magnifier-factor[data-active="true"] {
     opacity: 1;
     translate: -50% 0;
 }
@@ -87,7 +87,7 @@ body.qv-magnifier-on .pdf-page-container {
     }
 
     .pdf-magnifier,
-    .pdf-magnifier[data-visible='true'] {
+    .pdf-magnifier[data-visible="true"] {
         scale: 1;
     }
 }

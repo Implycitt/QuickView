@@ -1,11 +1,12 @@
-import { DOM } from '../../../ui/core/dom.js';
-import type { PdfLocation } from '../../../viewer/state.js';
-import type { PdfDocumentLike } from '../types.js';
-import type { PdfPageLayout } from '../layout.js';
-import type { createPdfNavigation } from '../navigation.js';
-import type { createPdfOutline } from '../outline/controller.js';
-import type { createThumbnailRenderer } from '../thumbnails/renderer.js';
-import type { MainPageRenderer } from './renderQueue.js';
+import type { MainPageRenderer } from "./renderQueue.js";
+
+import { DOM } from "../../../ui/core/dom.js";
+import type { PdfLocation } from "../../../viewer/state.js";
+import type { PdfPageLayout } from "../layout.js";
+import type { createPdfNavigation } from "../navigation.js";
+import type { createPdfOutline } from "../outline/controller.js";
+import type { createThumbnailRenderer } from "../thumbnails/renderer.js";
+import type { PdfDocumentLike } from "../types.js";
 
 interface PdfViewportDependencies {
     layout: PdfPageLayout;
@@ -58,8 +59,9 @@ export function createPdfViewport(deps: PdfViewportDependencies) {
         const pendingRestore = deps.getPendingRestore();
         if (position && pendingRestore) {
             const tolerance = Math.max(4, scroll.clientHeight * 0.05);
-            if (Math.abs(scroll.scrollTop - deps.navigation.scrollTopForLocation(pendingRestore)) > tolerance)
+            if (Math.abs(scroll.scrollTop - deps.navigation.scrollTopForLocation(pendingRestore)) > tolerance) {
                 deps.setPendingRestore(null);
+            }
         }
         if (position && !deps.getPendingRestore()) deps.setSavedPosition(position);
         updatePageCounter();
@@ -145,7 +147,7 @@ export function createPdfViewport(deps: PdfViewportDependencies) {
         isViewerBusy,
         onMainScroll,
         refreshSidebarSync,
-        scheduleMainWindowRender,
+        scheduleMainWindowRender
     };
 }
 

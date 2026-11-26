@@ -1,8 +1,8 @@
-import { PdfState } from '../state.js';
-import type { PdfLocation } from '../../../viewer/state.js';
-import { resetSearchState } from '../../search/controller.js';
-import type { PdfViewerState } from './factory.js';
-import type { createPdfViewerServices } from './factory.js';
+import type { createPdfViewerServices, PdfViewerState } from "./factory.js";
+
+import type { PdfLocation } from "../../../viewer/state.js";
+import { resetSearchState } from "../../search/controller.js";
+import { PdfState } from "../state.js";
 
 export function createPdfLifecycle(state: PdfViewerState, services: ReturnType<typeof createPdfViewerServices>) {
     function resetAll(keepPosition = false) {
@@ -23,7 +23,7 @@ export function createPdfLifecycle(state: PdfViewerState, services: ReturnType<t
         state.savedScrollPos = kept;
         state.lastKnownPage = kept?.page ?? 1;
         PdfState.currentPdfDoc = null;
-        PdfState.zoomMode = 'auto';
+        PdfState.zoomMode = "auto";
         services.session.resetViewer();
         if (outgoing) void outgoing.destroy().catch(() => {});
     }

@@ -1,13 +1,14 @@
-import { DOM, setSidebarFollowLabel, updateScrollModeClasses, updateSpreadModeClasses } from '../../ui/core/dom.js';
-import { scrollInstantly } from '../../ui/core/scroll.js';
-import { PdfState } from './state.js';
-import type { PdfLocation } from '../../viewer/state.js';
+import { PdfState } from "./state.js";
+
+import { DOM, setSidebarFollowLabel, updateScrollModeClasses, updateSpreadModeClasses } from "../../ui/core/dom.js";
+import { scrollInstantly } from "../../ui/core/scroll.js";
+import type { PdfLocation } from "../../viewer/state.js";
 
 const WHEEL_STEP_DISTANCE = 24;
 const WHEEL_STEP_COOLDOWN_MS = 110;
 const SNAP_ANCHOR_TTL_MS = 1500;
 const REALIGN_PAGE_TOLERANCE = 1;
-const SNAP_RESUME_KEYS = new Set(['j', 'k', 'arrowup', 'arrowdown', 'pageup', 'pagedown', 'home', 'end', ' ']);
+const SNAP_RESUME_KEYS = new Set(["j", "k", "arrowup", "arrowdown", "pageup", "pagedown", "home", "end", " "]);
 
 interface NavigationDependencies {
     getScrollContainer: () => HTMLElement | null;
@@ -37,8 +38,8 @@ export function createPdfNavigation(deps: NavigationDependencies) {
     let wheelAccumulator = 0;
     let wheelLockUntil = 0;
 
-    function scrollMode(): 'snap' | 'free' {
-        return PdfState.isSnapMode && !snapSuspended ? 'snap' : 'free';
+    function scrollMode(): "snap" | "free" {
+        return PdfState.isSnapMode && !snapSuspended ? "snap" : "free";
     }
 
     function viewportHeight(): number {
@@ -67,7 +68,7 @@ export function createPdfNavigation(deps: NavigationDependencies) {
     }
 
     function topForPage(page: number): number {
-        return scrollMode() === 'snap' ? alignedTopForPage(page) : deps.getPageTop(page);
+        return scrollMode() === "snap" ? alignedTopForPage(page) : deps.getPageTop(page);
     }
 
     function setScrollTop(top: number) {
@@ -77,13 +78,13 @@ export function createPdfNavigation(deps: NavigationDependencies) {
     }
 
     function anchorAlignment(page: number) {
-        anchoredPage = scrollMode() === 'snap' && !pageIsLong(page) ? deps.getRowStart(page, 0) : null;
+        anchoredPage = scrollMode() === "snap" && !pageIsLong(page) ? deps.getRowStart(page, 0) : null;
         anchorExpiresAt = performance.now() + SNAP_ANCHOR_TTL_MS;
     }
 
     function refreshSnapAnchor() {
         if (anchoredPage === null) return;
-        if (scrollMode() !== 'snap' || performance.now() > anchorExpiresAt) {
+        if (scrollMode() !== "snap" || performance.now() > anchorExpiresAt) {
             anchoredPage = null;
             return;
         }
@@ -96,12 +97,12 @@ export function createPdfNavigation(deps: NavigationDependencies) {
 
     function clearSnapResumeHandler() {
         if (!resumeHandler) return;
-        window.removeEventListener('keydown', resumeHandler, { capture: true });
+        window.removeEventListener("keydown", resumeHandler, { capture: true });
         resumeHandler = null;
     }
 
     function isTypingTarget(target: EventTarget | null): boolean {
-        return target instanceof HTMLElement && (target.matches('input, textarea, select') || target.isContentEditable);
+        return target instanceof HTMLElement && (target.matches("input, textarea, select") || target.isContentEditable);
     }
 
     function resumeSnap() {
@@ -110,7 +111,7 @@ export function createPdfNavigation(deps: NavigationDependencies) {
         snapSuspended = false;
         anchoredPage = null;
         deps.applyScrollMode();
-        window.dispatchEvent(new Event('qv:pdf-viewer-settings-changed'));
+        window.dispatchEvent(new Event("qv:pdf-viewer-settings-changed"));
     }
 
     function installSnapResumeHandler() {
@@ -122,16 +123,16 @@ export function createPdfNavigation(deps: NavigationDependencies) {
             resumeSnap();
         };
         resumeHandler = resume;
-        window.addEventListener('keydown', resume, { capture: true });
+        window.addEventListener("keydown", resume, { capture: true });
     }
 
     function suspendSnap() {
-        if (scrollMode() !== 'snap') return;
+        if (scrollMode() !== "snap") return;
         snapSuspended = true;
         anchoredPage = null;
         installSnapResumeHandler();
         deps.applyScrollMode();
-        window.dispatchEvent(new Event('qv:pdf-viewer-settings-changed'));
+        window.dispatchEvent(new Event("qv:pdf-viewer-settings-changed"));
     }
 
     function applySettings(settings: {
@@ -151,16 +152,16 @@ export function createPdfNavigation(deps: NavigationDependencies) {
         updateSpreadModeClasses(PdfState.isSpreadMode);
         if (snapSuspended) installSnapResumeHandler();
         deps.applyScrollMode();
-        window.dispatchEvent(new Event('qv:pdf-viewer-settings-changed'));
+        window.dispatchEvent(new Event("qv:pdf-viewer-settings-changed"));
     }
 
-    function setZoom(scale: number, mode: 'auto' | 'manual') {
+    function setZoom(scale: number, mode: "auto" | "manual") {
         if (!Number.isFinite(scale) || scale <= 0) return;
         PdfState.currentScale = scale;
         PdfState.zoomMode = mode;
         anchoredPage = null;
         if (DOM.zoomLevelSpan) DOM.zoomLevelSpan.value = `${Math.round(scale * 100)}%`;
-        window.dispatchEvent(new Event('qv:pdf-viewer-settings-changed'));
+        window.dispatchEvent(new Event("qv:pdf-viewer-settings-changed"));
     }
 
     function captureLocation(saved: PdfLocation | null): PdfLocation | null {
@@ -177,7 +178,7 @@ export function createPdfNavigation(deps: NavigationDependencies) {
         const page = Math.min(deps.getPageCount(), Math.max(1, location.page));
         const scroll = deps.getScrollContainer();
         const maxScroll = Math.max(0, (scroll?.scrollHeight ?? 0) - (scroll?.clientHeight ?? 0));
-        if (scrollMode() === 'snap') {
+        if (scrollMode() === "snap") {
             const viewport = viewportHeight();
             const height = deps.getRowHeight(page);
             const target =
@@ -252,7 +253,7 @@ export function createPdfNavigation(deps: NavigationDependencies) {
             const target = document.getElementById(`page-container-${page}`);
             const scroll = deps.getScrollContainer();
             if (!target || !scroll) return;
-            if (!precise && scrollMode() === 'snap') {
+            if (!precise && scrollMode() === "snap") {
                 deps.ensureGeometry();
                 setScrollTop(topForPage(page));
                 anchorAlignment(page);
@@ -276,7 +277,7 @@ export function createPdfNavigation(deps: NavigationDependencies) {
     }
 
     function stepPage(direction: number) {
-        if (scrollMode() !== 'snap') return;
+        if (scrollMode() !== "snap") return;
         const scroll = deps.getScrollContainer();
         const pageCount = deps.getPageCount();
         if (!scroll || pageCount === 0 || !PdfState.currentPdfDoc) return;
@@ -337,11 +338,11 @@ export function createPdfNavigation(deps: NavigationDependencies) {
     function attachScrollContainer(scroll: HTMLElement) {
         detachScrollContainer();
         wheelContainer = scroll;
-        wheelContainer.addEventListener('wheel', handleWheel, { passive: false });
+        wheelContainer.addEventListener("wheel", handleWheel, { passive: false });
     }
 
     function detachScrollContainer() {
-        wheelContainer?.removeEventListener('wheel', handleWheel);
+        wheelContainer?.removeEventListener("wheel", handleWheel);
         wheelContainer = null;
         wheelAccumulator = 0;
         wheelLockUntil = 0;
@@ -385,6 +386,6 @@ export function createPdfNavigation(deps: NavigationDependencies) {
         stepPage,
         toggleSidebarFollow,
         reset,
-        isFollowSuppressed: () => followSuppressed,
+        isFollowSuppressed: () => followSuppressed
     };
 }

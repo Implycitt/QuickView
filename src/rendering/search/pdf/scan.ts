@@ -1,8 +1,9 @@
-import { PdfState, isPdfViewerBusy } from '../../pdf/state.js';
-import type { PageMatch, SearchResult } from '../core/types.js';
-import { ensureIndexed, pageIndexes } from './pageIndexStore.js';
-import { matchText } from '../core/fuzzy.js';
-import { sortResults } from '../core/query.js';
+import { ensureIndexed, pageIndexes } from "./pageIndexStore.js";
+
+import { PdfState, isPdfViewerBusy } from "../../pdf/state.js";
+import { matchText } from "../core/fuzzy.js";
+import { sortResults } from "../core/query.js";
+import type { PageMatch, SearchResult } from "../core/types.js";
 
 const SCAN_CHUNK = 10;
 const PAGE_INDEX_TIMEOUT = 10000;
@@ -10,7 +11,7 @@ const BUSY_DELAY = 120;
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const timeout = new Promise<null>((resolve) => {
+    const timeout = new Promise<null>(resolve => {
         timer = setTimeout(() => resolve(null), ms);
     });
     return Promise.race([promise.catch(() => null), timeout]).finally(() => clearTimeout(timer));
@@ -20,7 +21,7 @@ export async function scanPdf(
     tokens: string[],
     isCurrent: () => boolean,
     onUpdate: (results: SearchResult[], matches: Map<number, PageMatch[]>, done: number, total: number) => void,
-    startPage = 1,
+    startPage = 1
 ) {
     const doc = PdfState.currentPdfDoc;
     if (!doc) return;
@@ -67,7 +68,7 @@ export async function scanPdf(
             if (checked % SCAN_CHUNK === 0) {
                 sortResults(results);
                 onUpdate(results, matches, checked, total);
-                await new Promise<void>((resolve) => setTimeout(resolve, isPdfViewerBusy() ? BUSY_DELAY : 0));
+                await new Promise<void>(resolve => setTimeout(resolve, isPdfViewerBusy() ? BUSY_DELAY : 0));
             }
         }
     };

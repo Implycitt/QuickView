@@ -1,4 +1,4 @@
-import type { PageIndex, PageMatch } from '../core/types.js';
+import type { PageIndex, PageMatch } from "../core/types.js";
 
 let activeMatches: Map<number, PageMatch[]> | null = null;
 
@@ -7,10 +7,10 @@ export function setActiveHighlights(matches: Map<number, PageMatch[]> | null) {
 }
 
 function setSpanHighlight(span: HTMLElement, range: PageMatch, matches: PageMatch[]) {
-    const key = matches.map((match) => `${match.start}-${match.end}`).join(',');
+    const key = matches.map(match => `${match.start}-${match.end}`).join(",");
     if (span.dataset.hl === key) return;
 
-    const text = span.textContent ?? '';
+    const text = span.textContent ?? "";
     const nodes: Node[] = [];
     let cursor = 0;
 
@@ -18,8 +18,8 @@ function setSpanHighlight(span: HTMLElement, range: PageMatch, matches: PageMatc
         const start = match.start - range.start;
         const end = match.end - range.start;
         if (start > cursor) nodes.push(document.createTextNode(text.slice(cursor, start)));
-        const mark = document.createElement('span');
-        mark.className = 'pdf-hl';
+        const mark = document.createElement("span");
+        mark.className = "pdf-hl";
         mark.textContent = text.slice(start, end);
         nodes.push(mark);
         cursor = end;
@@ -53,9 +53,9 @@ export function applyPdfHighlights(index: PageIndex, pageNum: number) {
 
 export function applyMarkdownHighlights(
     blocks: readonly { element: HTMLElement }[],
-    matches: Map<number, PageMatch[]> | null,
+    matches: Map<number, PageMatch[]> | null
 ) {
     for (let index = 0; index < blocks.length; index++) {
-        blocks[index].element.classList.toggle('md-search-hl', matches?.has(index) ?? false);
+        blocks[index].element.classList.toggle("md-search-hl", matches?.has(index) ?? false);
     }
 }

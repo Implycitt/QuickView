@@ -1,7 +1,8 @@
-import { DOM } from '../../../ui/core/dom.js';
-import { BREADCRUMB_SEPARATOR, setBreadcrumbPath } from '../../../ui/core/breadcrumb.js';
-import { buildOutlineItem } from './tree.js';
-import type { OutlineDependencies, OutlinePosition, OutlineTarget } from './types.js';
+import { buildOutlineItem } from "./tree.js";
+import type { OutlineDependencies, OutlinePosition, OutlineTarget } from "./types.js";
+
+import { BREADCRUMB_SEPARATOR, setBreadcrumbPath } from "../../../ui/core/breadcrumb.js";
+import { DOM } from "../../../ui/core/dom.js";
 
 const OUTLINE_LINK_CONCURRENCY = 8;
 
@@ -35,18 +36,18 @@ export function createPdfOutline(deps: OutlineDependencies) {
     function sectionsVisible(): boolean {
         return (
             !!DOM.sidebarSections &&
-            !DOM.sidebarSections.classList.contains('hidden') &&
+            !DOM.sidebarSections.classList.contains("hidden") &&
             !!DOM.sidebar &&
-            DOM.sidebar.style.width !== '0px'
+            DOM.sidebar.style.width !== "0px"
         );
     }
 
     function installObservers() {
-        const sidebar = document.getElementById('sidebar');
+        const sidebar = document.getElementById("sidebar");
         if (!sidebar || observersInstalled) return;
         observersInstalled = true;
-        sidebar.addEventListener('scroll', invalidateViewport, { passive: true });
-        if (typeof ResizeObserver !== 'undefined') {
+        sidebar.addEventListener("scroll", invalidateViewport, { passive: true });
+        if (typeof ResizeObserver !== "undefined") {
             new ResizeObserver(invalidateViewport).observe(sidebar);
             if (DOM.sidebarSections) new ResizeObserver(invalidateLayout).observe(DOM.sidebarSections);
         }
@@ -54,7 +55,7 @@ export function createPdfOutline(deps: OutlineDependencies) {
 
     function ensureViewport() {
         if (viewportValid) return;
-        const sidebar = document.getElementById('sidebar');
+        const sidebar = document.getElementById("sidebar");
         if (!sidebar) return;
         viewportValid = true;
         sidebarScrollTop = sidebar.scrollTop;
@@ -65,7 +66,7 @@ export function createPdfOutline(deps: OutlineDependencies) {
         if (layoutValid) return;
         layoutValid = true;
         rowBoxes.clear();
-        const sidebar = document.getElementById('sidebar');
+        const sidebar = document.getElementById("sidebar");
         const pane = DOM.sidebarSections;
         if (!sidebar || !pane || !sectionsVisible() || rows.length === 0) return;
         const paneRectTop = pane.getBoundingClientRect().top;
@@ -77,7 +78,7 @@ export function createPdfOutline(deps: OutlineDependencies) {
     }
 
     function scrollRowIntoView(row: HTMLElement, center = false) {
-        const sidebar = document.getElementById('sidebar');
+        const sidebar = document.getElementById("sidebar");
         if (!sidebar || !sectionsVisible()) return;
         ensureViewport();
         ensureLayout();
@@ -125,7 +126,7 @@ export function createPdfOutline(deps: OutlineDependencies) {
             const parts: string[] = [];
             let node: HTMLElement | null = current;
             while (node) {
-                parts.unshift(node.querySelector('.outline-label')?.textContent || '(untitled)');
+                parts.unshift(node.querySelector(".outline-label")?.textContent || "(untitled)");
                 node = parents.get(node) ?? null;
             }
             path = `${fileName}${BREADCRUMB_SEPARATOR}${parts.join(BREADCRUMB_SEPARATOR)}`;
@@ -143,16 +144,16 @@ export function createPdfOutline(deps: OutlineDependencies) {
         const visible = sectionsVisible();
         const activeChanged = best !== activeRow;
         if (visible && activeChanged) {
-            activeRow?.classList.remove('outline-active');
+            activeRow?.classList.remove("outline-active");
             activeRow = best;
             if (best) {
-                best.classList.add('outline-active');
+                best.classList.add("outline-active");
                 let node = best.parentElement;
                 let expanded = false;
                 while (node && node !== DOM.sidebarSections) {
-                    if (node.classList.contains('outline-children') && node.classList.contains('hidden')) {
-                        node.classList.remove('hidden');
-                        node.previousElementSibling?.classList.remove('outline-collapsed');
+                    if (node.classList.contains("outline-children") && node.classList.contains("hidden")) {
+                        node.classList.remove("hidden");
+                        node.previousElementSibling?.classList.remove("outline-collapsed");
                         expanded = true;
                     }
                     node = node.parentElement;
@@ -170,14 +171,14 @@ export function createPdfOutline(deps: OutlineDependencies) {
         try {
             const doc = deps.getDocument();
             if (!destination || !doc) return null;
-            if (typeof destination === 'string') return resolveDestination(await doc.getDestination(destination));
+            if (typeof destination === "string") return resolveDestination(await doc.getDestination(destination));
             if (!Array.isArray(destination)) return null;
             const dest = destination as unknown[];
             const reference = dest[0];
-            if (reference && typeof reference === 'object' && 'num' in reference) {
+            if (reference && typeof reference === "object" && "num" in reference) {
                 return withDestinationPosition((await doc.getPageIndex(reference)) + 1, dest, doc);
             }
-            if (typeof reference === 'number') return withDestinationPosition(Math.round(reference), dest, doc);
+            if (typeof reference === "number") return withDestinationPosition(Math.round(reference), dest, doc);
         } catch {}
         return null;
     }
@@ -185,14 +186,14 @@ export function createPdfOutline(deps: OutlineDependencies) {
     async function withDestinationPosition(
         pageNumber: number,
         destination: unknown[],
-        doc: NonNullable<ReturnType<OutlineDependencies['getDocument']>>,
+        doc: NonNullable<ReturnType<OutlineDependencies["getDocument"]>>
     ): Promise<OutlineTarget | null> {
         const page = Math.min(doc.numPages, Math.max(1, pageNumber));
         const modeValue = destination[1] as { name?: unknown } | string | undefined;
-        const mode = typeof modeValue === 'object' && modeValue !== null ? modeValue.name : modeValue;
+        const mode = typeof modeValue === "object" && modeValue !== null ? modeValue.name : modeValue;
         let top: number | null = null;
-        if (mode === 'XYZ' && typeof destination[3] === 'number') top = destination[3];
-        else if ((mode === 'FitH' || mode === 'FitBH') && typeof destination[2] === 'number') top = destination[2];
+        if (mode === "XYZ" && typeof destination[3] === "number") top = destination[3];
+        else if ((mode === "FitH" || mode === "FitBH") && typeof destination[2] === "number") top = destination[2];
         if (top === null) return { page, y: null };
 
         let height = deps.getPageHeightPoints(page);
@@ -206,7 +207,7 @@ export function createPdfOutline(deps: OutlineDependencies) {
 
     async function linkRows() {
         if (!DOM.sidebarSections) return;
-        const rows = Array.from(DOM.sidebarSections.querySelectorAll<HTMLElement>('.outline-item'));
+        const rows = Array.from(DOM.sidebarSections.querySelectorAll<HTMLElement>(".outline-item"));
         let next = 0;
         const worker = async () => {
             while (next < rows.length) {
@@ -227,7 +228,7 @@ export function createPdfOutline(deps: OutlineDependencies) {
         const doc = deps.getDocument();
         if (!doc || !DOM.sidebarSections) return;
         installObservers();
-        DOM.sidebarSections.innerHTML = '';
+        DOM.sidebarSections.innerHTML = "";
         invalidateViewport();
         invalidateLayout();
         activeRow = null;
@@ -241,30 +242,31 @@ export function createPdfOutline(deps: OutlineDependencies) {
 
         const outline = await doc.getOutline().catch(() => null);
         if (!outline || outline.length === 0) {
-            const empty = document.createElement('div');
-            empty.className = 'text-gray-500 text-xs italic p-2';
-            empty.textContent = 'No sections in this document';
+            const empty = document.createElement("div");
+            empty.className = "text-gray-500 text-xs italic p-2";
+            empty.textContent = "No sections in this document";
             DOM.sidebarSections.appendChild(empty);
             syncBreadcrumb();
             return;
         }
 
         const fragment = document.createDocumentFragment();
-        for (const item of outline)
+        for (const item of outline) {
             fragment.appendChild(
                 buildOutlineItem(item, 0, null, {
                     setParent: (row, parent) => parents.set(row, parent),
                     setDestination: (row, destination) => destinations.set(row, destination),
                     toggleChildren: invalidateLayout,
-                    navigate: (destination) => {
-                        void resolveDestination(destination).then((target) => {
+                    navigate: destination => {
+                        void resolveDestination(destination).then(target => {
                             if (target) deps.jumpToPage(target.page, null, true);
                         });
-                    },
-                }),
+                    }
+                })
             );
+        }
         DOM.sidebarSections.appendChild(fragment);
-        rows = Array.from(DOM.sidebarSections.querySelectorAll<HTMLElement>('.outline-item'));
+        rows = Array.from(DOM.sidebarSections.querySelectorAll<HTMLElement>(".outline-item"));
         await linkRows();
         positionedRows = rows
             .map((row, order) => {

@@ -1,7 +1,8 @@
-import { DOM } from '../../../ui/core/dom.js';
-import type { PdfDocumentLike } from '../types.js';
-import { createThumbnailLayout } from './layout.js';
-import type { ThumbnailDependencies } from './types.js';
+import { createThumbnailLayout } from "./layout.js";
+import type { ThumbnailDependencies } from "./types.js";
+
+import { DOM } from "../../../ui/core/dom.js";
+import type { PdfDocumentLike } from "../types.js";
 
 const DEFAULT_EVICT_RADIUS = 16;
 const LARGE_DOCUMENT_PAGE_COUNT = 700;
@@ -54,14 +55,14 @@ export function createThumbnailRenderer(deps: ThumbnailRendererDependencies) {
     function paneVisible(): boolean {
         return (
             !!DOM.sidebarPreviews &&
-            !DOM.sidebarPreviews.classList.contains('hidden') &&
+            !DOM.sidebarPreviews.classList.contains("hidden") &&
             !!DOM.sidebar &&
-            DOM.sidebar.style.width !== '0px'
+            DOM.sidebar.style.width !== "0px"
         );
     }
 
     function paneOffsetInSidebar(): number {
-        const sidebar = document.getElementById('sidebar');
+        const sidebar = document.getElementById("sidebar");
         const pane = DOM.sidebarPreviews;
         if (!sidebar || !pane) return 0;
         return pane.getBoundingClientRect().top - sidebar.getBoundingClientRect().top + sidebar.scrollTop;
@@ -81,7 +82,7 @@ export function createThumbnailRenderer(deps: ThumbnailRendererDependencies) {
     }
 
     function captureSidebarAnchor(): { page: number; fraction: number } | null {
-        const sidebar = document.getElementById('sidebar');
+        const sidebar = document.getElementById("sidebar");
         const tops = layout.tops;
         if (!sidebar || tops.length === 0) return null;
         const center = sidebar.scrollTop + sidebar.clientHeight / 2 - paneOffsetInSidebar();
@@ -92,7 +93,7 @@ export function createThumbnailRenderer(deps: ThumbnailRendererDependencies) {
     }
 
     function restoreSidebarAnchor(anchor: { page: number; fraction: number } | null): number {
-        const sidebar = document.getElementById('sidebar');
+        const sidebar = document.getElementById("sidebar");
         const tops = layout.tops;
         if (!anchor || !sidebar) return 0;
         const target =
@@ -111,14 +112,15 @@ export function createThumbnailRenderer(deps: ThumbnailRendererDependencies) {
         const stickyTop = DOM.sidebarTabs?.offsetHeight ?? 0;
         const viewportTop = sidebarRect.top + stickyTop;
         const viewportHeight = Math.max(0, sidebar.clientHeight - stickyTop);
-        if (!center && thumbRect.top >= viewportTop && thumbRect.bottom <= sidebarRect.top + sidebar.clientHeight)
+        if (!center && thumbRect.top >= viewportTop && thumbRect.bottom <= sidebarRect.top + sidebar.clientHeight) {
             return;
+        }
         const target = Math.max(
             0,
             Math.min(
                 sidebar.scrollHeight - sidebar.clientHeight,
-                sidebar.scrollTop + thumbRect.top - viewportTop - (viewportHeight - thumbRect.height) / 2,
-            ),
+                sidebar.scrollTop + thumbRect.top - viewportTop - (viewportHeight - thumbRect.height) / 2
+            )
         );
         const distance = Math.abs(sidebar.scrollTop - target);
         if (distance < 1) return;
@@ -137,9 +139,9 @@ export function createThumbnailRenderer(deps: ThumbnailRendererDependencies) {
         if (!paneVisible()) return;
         if (!center && !changed && activeThumb?.isConnected) return;
 
-        activeThumb?.classList.remove('thumb-active');
+        activeThumb?.classList.remove("thumb-active");
         activeThumb = layout.ensureMounted(page, () => deps.jumpToPage(page));
-        activeThumb?.classList.add('thumb-active');
+        activeThumb?.classList.add("thumb-active");
         if ((changed || center) && (forceFollow || shouldFollow()) && activeThumb) {
             scrollThumbIntoView(activeThumb, true);
         }
@@ -187,12 +189,12 @@ export function createThumbnailRenderer(deps: ThumbnailRendererDependencies) {
             DOM.sidebarPreviews?.querySelector(`[data-page-num="${pageNumber}"]`) === thumbnail &&
             deps.getDocument() === document;
         if (!thumbnail || !thumbnail.isConnected || !document) return;
-        if (thumbnail.dataset.rendering === '1') {
+        if (thumbnail.dataset.rendering === "1") {
             schedule();
             return;
         }
         try {
-            thumbnail.dataset.rendering = '1';
+            thumbnail.dataset.rendering = "1";
             const page = await document.getPage(pageNumber);
             if (!isCurrent()) return;
             const baseViewport = page.getViewport({ scale: 1 });
@@ -208,14 +210,14 @@ export function createThumbnailRenderer(deps: ThumbnailRendererDependencies) {
                 thumbnail.style.height = `${cssHeight}px`;
                 schedule();
             }
-            const context = thumbnail.getContext('2d');
+            const context = thumbnail.getContext("2d");
             if (!context) return;
             const task = page.render({ canvasContext: context, viewport }) as RenderTask;
             entry.task = task;
             await task.promise;
             if (!isCurrent()) return;
             rendered.set(pageNumber, thumbnail);
-            thumbnail.dataset.rendered = '1';
+            thumbnail.dataset.rendered = "1";
         } catch (error) {
             if (pending.get(pageNumber) === entry && !deps.isObsoleteRender(error, document)) {
                 console.error(`Error rendering thumbnail ${pageNumber}:`, error);
@@ -230,7 +232,7 @@ export function createThumbnailRenderer(deps: ThumbnailRendererDependencies) {
         const elements = layout.elements;
         for (let index = elements.length - 1; index >= 0; index--) {
             const canvas = elements[index];
-            const page = parseInt(canvas.dataset.pageNum || '0', 10);
+            const page = parseInt(canvas.dataset.pageNum || "0", 10);
             if (page - 1 >= first - radius && page - 1 <= last + radius) continue;
             canvas.remove();
             elements.splice(index, 1);
@@ -249,7 +251,7 @@ export function createThumbnailRenderer(deps: ThumbnailRendererDependencies) {
     }
 
     function renderVisible() {
-        const sidebar = globalThis.document.getElementById('sidebar');
+        const sidebar = globalThis.document.getElementById("sidebar");
         const pdfDocument = deps.getDocument();
         if (!sidebar || !DOM.sidebarPreviews || !pdfDocument || !paneVisible()) return;
         const anchor = captureSidebarAnchor();
@@ -266,7 +268,7 @@ export function createThumbnailRenderer(deps: ThumbnailRendererDependencies) {
         }
         evict(first, last);
         const radius = evictionRadius();
-        queue = queue.filter((page) => page - 1 >= first - radius - 5 && page - 1 <= last + radius + 5);
+        queue = queue.filter(page => page - 1 >= first - radius - 5 && page - 1 <= last + radius + 5);
 
         const visiblePages: number[] = [];
         for (let index = visibleFirst; index <= visibleLast; index++) visiblePages.push(index + 1);
@@ -277,9 +279,9 @@ export function createThumbnailRenderer(deps: ThumbnailRendererDependencies) {
         for (const page of [...visiblePages, ...nearbyPages]) queueRender(page, false);
         const priority = new Set([...visiblePages, ...nearbyPages]);
         queue = [
-            ...visiblePages.filter((page) => pending.has(page)),
-            ...nearbyPages.filter((page) => pending.has(page)),
-            ...queue.filter((page) => !priority.has(page)),
+            ...visiblePages.filter(page => pending.has(page)),
+            ...nearbyPages.filter(page => pending.has(page)),
+            ...queue.filter(page => !priority.has(page))
         ];
         pumpQueue();
         syncActiveThumb();
@@ -323,13 +325,13 @@ export function createThumbnailRenderer(deps: ThumbnailRendererDependencies) {
         const pdfDocument = deps.getDocument();
         const pane = DOM.sidebarPreviews;
         if (!pdfDocument || !pane) return;
-        const sidebar = globalThis.document.getElementById('sidebar');
+        const sidebar = globalThis.document.getElementById("sidebar");
         if (!sidebar) return;
         const anchor = paneVisible() ? captureSidebarAnchor() : null;
         cancel();
         layout.reset();
-        pane.innerHTML = '';
-        pane.style.position = 'relative';
+        pane.innerHTML = "";
+        pane.style.position = "relative";
         sidebar.onscroll = null;
         if (settleTimer) {
             clearTimeout(settleTimer);
@@ -337,8 +339,8 @@ export function createThumbnailRenderer(deps: ThumbnailRendererDependencies) {
         }
         layout.rebuild();
         if (anchor) sidebar.scrollTop = restoreSidebarAnchor(anchor);
-        sidebar.removeEventListener('scroll', onSidebarScroll);
-        sidebar.addEventListener('scroll', onSidebarScroll, { passive: true });
+        sidebar.removeEventListener("scroll", onSidebarScroll);
+        sidebar.addEventListener("scroll", onSidebarScroll, { passive: true });
         schedule();
 
         const freshDocument = pdfDocument !== previousDocument;
@@ -358,8 +360,8 @@ export function createThumbnailRenderer(deps: ThumbnailRendererDependencies) {
             clearTimeout(settleTimer);
             settleTimer = null;
         }
-        const sidebar = globalThis.document.getElementById('sidebar');
-        sidebar?.removeEventListener('scroll', onSidebarScroll);
+        const sidebar = globalThis.document.getElementById("sidebar");
+        sidebar?.removeEventListener("scroll", onSidebarScroll);
     }
 
     function refresh(scrollToActive = false) {

@@ -1,6 +1,7 @@
-import './ui/main.css';
-import { startApplication } from './ui/app/application.js';
+import { startApplication } from "./ui/app/application.js";
 
-document.addEventListener('DOMContentLoaded', () => {
+import "./ui/main.css";
+
+document.addEventListener("DOMContentLoaded", () => {
     void startApplication();
 });

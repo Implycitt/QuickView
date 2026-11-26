@@ -1,10 +1,10 @@
-import { DOM } from './dom.js';
+import { DOM } from "./dom.js";
 
-export const BREADCRUMB_SEPARATOR = ' > ';
-const ELISION_MARKER = '...';
+export const BREADCRUMB_SEPARATOR = " > ";
+const ELISION_MARKER = "...";
 const FIT_TOLERANCE_PX = 1;
 
-let currentTrail = '';
+let currentTrail = "";
 let refitScheduled = false;
 
 function sections(trail: string): string[] {
@@ -38,9 +38,9 @@ function widestFittingTrail(element: HTMLElement, options: string[]): string {
 
 function renderTrail(element: HTMLElement, trail: string): void {
     const segments = trail ? sections(trail) : [];
-    element.classList.toggle('hidden', segments.length === 0);
+    element.classList.toggle("hidden", segments.length === 0);
     if (segments.length === 0) {
-        if (element.textContent) element.textContent = '';
+        if (element.textContent) element.textContent = "";
         return;
     }
     const fitted = widestFittingTrail(element, candidateTrails(segments));
@@ -58,13 +58,13 @@ function scheduleRefit(): void {
     });
 }
 
-window.addEventListener('resize', scheduleRefit);
+window.addEventListener("resize", scheduleRefit);
 
 export function setBreadcrumbPath(path: string | null) {
     const element = DOM.breadcrumb;
     if (!element) return;
 
-    const trail = path ?? '';
+    const trail = path ?? "";
     if (element.title !== trail) element.title = trail;
     if (trail === currentTrail) return;
 

@@ -1,7 +1,4 @@
-import { DOM } from '../../ui/core/dom.js';
-import { loadPdfjs } from './pdfjs.js';
-import type { PdfDocumentLike, PdfJsLoadingTask, PdfJsModule } from './types.js';
-import { PdfState } from './state.js';
+import { loadPdfjs } from "./pdfjs.js";
 import {
     renderAllMainPages,
     renderThumbnails,
@@ -10,16 +7,20 @@ import {
     setCurrentFileName,
     setPdfZoom,
     applyPdfViewerSettings,
-    restorePdfPosition,
-} from './renderer.js';
-import { startBackgroundIndex } from '../search/pdf/backgroundIndexer.js';
-import type { FileResponse } from '../../types/types.d.ts';
-import type { StoredViewerState } from '../../viewer/state.js';
+    restorePdfPosition
+} from "./renderer.js";
+import { PdfState } from "./state.js";
+import type { PdfDocumentLike, PdfJsLoadingTask, PdfJsModule } from "./types.js";
+
+import type { FileResponse } from "../../types/types.d.ts";
+import { DOM } from "../../ui/core/dom.js";
+import type { StoredViewerState } from "../../viewer/state.js";
+import { startBackgroundIndex } from "../search/pdf/backgroundIndexer.js";
 
 let activeLoad: PdfJsLoadingTask | null = null;
 
 function setPdfLayout() {
-    DOM.mainContentNode.classList.remove('pt-8', 'px-8', 'pb-20', 'qv-html-viewer');
+    DOM.mainContentNode.classList.remove("pt-8", "px-8", "pb-20", "qv-html-viewer");
 }
 
 const RANGE_PIECE_BYTES = 4 * 1024 * 1024;
@@ -33,7 +34,7 @@ async function readRangeWithRetry(filePath: string, begin: number, end: number):
             return await window.electronAPI.readFileRange(filePath, begin, end);
         } catch (error) {
             if (attempt >= RANGE_RETRIES) throw error;
-            await new Promise((resolve) => setTimeout(resolve, 150 * (attempt + 1)));
+            await new Promise(resolve => setTimeout(resolve, 150 * (attempt + 1)));
         }
     }
 }
@@ -49,7 +50,7 @@ function createRangeTransport(pdfjsLib: PdfJsModule, filePath: string, length: n
                     transport.onDataRange(pieceStart, chunk);
                 }
             } catch (error) {
-                console.error('PDF range read failed:', error);
+                console.error("PDF range read failed:", error);
             }
         })();
     };
@@ -65,7 +66,7 @@ export function openPdfDocumentSource(pdfjsLib: PdfJsModule, content: FileRespon
         length,
         rangeChunkSize: 64 * 1024,
         disableAutoFetch: true,
-        disableStream: true,
+        disableStream: true
     } as never);
 }
 
@@ -73,7 +74,7 @@ export async function renderPdfDocument(
     content: FileResponse,
     viewerState: StoredViewerState | null,
     reopening: boolean,
-    isStale: () => boolean,
+    isStale: () => boolean
 ): Promise<boolean> {
     if (isStale()) return false;
     if (!content.data && content.length === undefined) {
@@ -87,8 +88,8 @@ export async function renderPdfDocument(
     activeLoad = null;
     if (superseded) void superseded.destroy().catch(() => {});
     resetPdfState(reopening);
-    DOM.pdfTools?.classList.remove('hidden');
-    DOM.sidebarTabs?.classList.remove('hidden');
+    DOM.pdfTools?.classList.remove("hidden");
+    DOM.sidebarTabs?.classList.remove("hidden");
 
     let loadingTask: PdfJsLoadingTask | null = null;
     let openedDoc: PdfDocumentLike | null = null;
@@ -122,22 +123,22 @@ export async function renderPdfDocument(
         loadingTask = null;
         setCurrentFileName(content.name);
 
-        const pdfState = viewerState?.documentType === 'pdf' ? viewerState : null;
+        const pdfState = viewerState?.documentType === "pdf" ? viewerState : null;
         if (pdfState) {
             setPdfZoom(pdfState.location?.scale ?? 1, pdfState.zoomMode);
             applyPdfViewerSettings({
                 isSnapMode: pdfState.isSnapMode,
                 snapSuspended: pdfState.snapSuspended,
                 sidebarFollow: pdfState.sidebarFollow,
-                isSpreadMode: pdfState.isSpreadMode ?? false,
+                isSpreadMode: pdfState.isSpreadMode ?? false
             });
         } else if (!reopening) {
-            setPdfZoom(1, 'auto');
+            setPdfZoom(1, "auto");
             applyPdfViewerSettings({
                 isSnapMode: false,
                 snapSuspended: false,
                 sidebarFollow: true,
-                isSpreadMode: false,
+                isSpreadMode: false
             });
         }
 
@@ -145,15 +146,15 @@ export async function renderPdfDocument(
         if (abandonIfStale()) return false;
         if (pdfState?.location) restorePdfPosition(pdfState.location);
         openedDoc = null;
-        void renderThumbnails().catch((error: unknown) => console.error('Error rendering PDF thumbnails:', error));
-        void renderOutline().catch((error: unknown) => console.error('Error rendering PDF outline:', error));
+        void renderThumbnails().catch((error: unknown) => console.error("Error rendering PDF thumbnails:", error));
+        void renderOutline().catch((error: unknown) => console.error("Error rendering PDF outline:", error));
         startBackgroundIndex();
         return true;
     } catch (error) {
         if (activeLoad === loadingTask) activeLoad = null;
         if (loadingTask) void loadingTask.destroy().catch(() => {});
         if (abandonIfStale()) return false;
-        console.error('Error rendering PDF:', error);
+        console.error("Error rendering PDF:", error);
         resetPdfState();
         DOM.mainContentNode.innerHTML =
             '<div class="p-8 text-red-500 flex justify-center">Failed to load PDF document.</div>';

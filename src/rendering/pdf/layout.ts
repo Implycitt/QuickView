@@ -1,9 +1,9 @@
 const DEFAULT_PAGE_POINTS = { width: 612, height: 792 };
 const DEFAULT_PAGE_PADDING = 32;
 const DEFAULT_PAGE_GAP = 32;
-const PAGE_CONTAINER_CLASS = 'pdf-page-container shadow-lg bg-white shrink-0 relative';
-const PAGE_ROW_CLASS = 'pdf-page-row mx-auto mb-8 flex shrink-0 items-center justify-center';
-const SPREAD_ROW_GAP_CLASS = 'gap-px';
+const PAGE_CONTAINER_CLASS = "pdf-page-container shadow-lg bg-white shrink-0 relative";
+const PAGE_ROW_CLASS = "pdf-page-row mx-auto mb-8 flex shrink-0 items-center justify-center";
+const SPREAD_ROW_GAP_CLASS = "gap-px";
 
 export const SPREAD_PAGE_GAP = 1;
 const MOUNT_BEHIND_PAGES = 3;
@@ -247,7 +247,7 @@ export function createPdfPageLayout(deps: PdfPageLayoutDependencies) {
     function createContainer(pageNumber: number): HTMLElement {
         const size = pagePointSize(pageNumber);
         const scale = deps.getScale() || 1;
-        const container = document.createElement('div');
+        const container = document.createElement("div");
         container.id = `page-container-${pageNumber}`;
         container.className = PAGE_CONTAINER_CLASS;
         container.dataset.pageNum = String(pageNumber);
@@ -258,7 +258,7 @@ export function createPdfPageLayout(deps: PdfPageLayoutDependencies) {
 
     function createRow(row: number): HTMLElement | null {
         if (!scrollContainer || !bottomSpacer || rowContainers[row]) return null;
-        const element = document.createElement('div');
+        const element = document.createElement("div");
         element.className =
             rowLastPages[row] > rowFirstPages[row] ? `${PAGE_ROW_CLASS} ${SPREAD_ROW_GAP_CLASS}` : PAGE_ROW_CLASS;
         element.dataset.rowIndex = String(row);
@@ -320,7 +320,7 @@ export function createPdfPageLayout(deps: PdfPageLayoutDependencies) {
             updateSpacers();
             return;
         }
-        const overlaps = mountedRows.some((row) => row >= firstRow && row <= lastRow);
+        const overlaps = mountedRows.some(row => row >= firstRow && row <= lastRow);
         if (!overlaps) unmountAllRows();
         for (const row of [...mountedRows]) {
             if (row < firstRow || row > lastRow) unmountRow(row);
@@ -339,7 +339,7 @@ export function createPdfPageLayout(deps: PdfPageLayoutDependencies) {
     function applyScrollMode() {
         if (!scrollContainer) return;
         const enabled = deps.getSnapMode() && !deps.isSnapSuspended();
-        scrollContainer.dataset.scrollMode = enabled ? 'snap' : 'free';
+        scrollContainer.dataset.scrollMode = enabled ? "snap" : "free";
     }
 
     function sampleLayout() {
@@ -397,7 +397,7 @@ export function createPdfPageLayout(deps: PdfPageLayoutDependencies) {
         setViewer,
         syncMountedPages,
         applyScrollMode,
-        updateSpacers,
+        updateSpacers
     };
 }
 

@@ -1,13 +1,14 @@
-import { PdfState } from '../pdf/state.js';
-import { clearPageIndexStore, pageIndexes } from './pdf/pageIndexStore.js';
-import { scanPdf } from './pdf/scan.js';
-import { clearMarkdownIndex, ensureMarkdownIndex, markdownBlocks, scanMarkdown } from './markdown/index.js';
-import { parseQuery } from './core/query.js';
-import type { PageMatch, SearchMode, SearchResult } from './core/types.js';
-import { applyPdfHighlights, applyMarkdownHighlights, setActiveHighlights } from './ui/highlights.js';
-import { clearPendingSearchScroll, jumpToSearchResult } from './ui/navigation.js';
-import { initSearchDialog, closeSearchDialog, updateSearchDialog } from './ui/dialog.js';
-import { renderEmpty, renderResults } from './ui/results.js';
+import { parseQuery } from "./core/query.js";
+import type { PageMatch, SearchMode, SearchResult } from "./core/types.js";
+import { clearMarkdownIndex, ensureMarkdownIndex, markdownBlocks, scanMarkdown } from "./markdown/index.js";
+import { clearPageIndexStore, pageIndexes } from "./pdf/pageIndexStore.js";
+import { scanPdf } from "./pdf/scan.js";
+import { initSearchDialog, closeSearchDialog, updateSearchDialog } from "./ui/dialog.js";
+import { applyPdfHighlights, applyMarkdownHighlights, setActiveHighlights } from "./ui/highlights.js";
+import { clearPendingSearchScroll, jumpToSearchResult } from "./ui/navigation.js";
+import { renderEmpty, renderResults } from "./ui/results.js";
+
+import { PdfState } from "../pdf/state.js";
 
 let searchVersion = 0;
 let activeMatches: Map<number, PageMatch[]> | null = null;
@@ -24,7 +25,7 @@ function publishResults(results: SearchResult[], matches: Map<number, PageMatch[
     activeMatches = matches;
     setActiveHighlights(matches);
     currentResults = results;
-    renderResults(results, done, total, searchMode ?? 'pdf', selectedIndex, selectResult);
+    renderResults(results, done, total, searchMode ?? "pdf", selectedIndex, selectResult);
     updateSearchDialog(results, searchMode);
     applyAllHighlights();
 }
@@ -40,12 +41,12 @@ function selectResult(index: number) {
         currentResults.length,
         searchMode,
         selectedIndex,
-        selectResult,
+        selectResult
     );
 }
 
 function currentPdfPage(): number {
-    const counter = document.getElementById('page-counter') as HTMLInputElement | null;
+    const counter = document.getElementById("page-counter") as HTMLInputElement | null;
     const value = Number(counter?.value);
     return Number.isFinite(value) && value > 0 ? value : 1;
 }
@@ -57,7 +58,7 @@ export function runSearch(query: string) {
     if (tokens.length > 0) ensureMarkdownIndex();
     const hasPdf = !!PdfState.currentPdfDoc;
     const hasMarkdown = markdownBlocks.length > 0;
-    searchMode = hasPdf ? 'pdf' : hasMarkdown ? 'md' : null;
+    searchMode = hasPdf ? "pdf" : hasMarkdown ? "md" : null;
     selectedIndex = 0;
     updateSearchDialog([], searchMode);
     if (!searchMode) {
@@ -89,11 +90,11 @@ export function runSearch(query: string) {
 export function initSearch() {
     initSearchDialog(
         runSearch,
-        (index) => {
+        index => {
             const result = currentResults[index];
             if (result && searchMode) jumpToSearchResult(result, searchMode);
         },
-        closeSearch,
+        closeSearch
     );
     updateSearchDialog([], null);
 }

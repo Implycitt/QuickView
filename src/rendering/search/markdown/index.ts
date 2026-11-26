@@ -1,8 +1,8 @@
-import { matchText } from '../core/fuzzy.js';
-import { normalizeBlock, sortResults } from '../core/query.js';
-import type { PageMatch, SearchResult } from '../core/types.js';
+import { matchText } from "../core/fuzzy.js";
+import { normalizeBlock, sortResults } from "../core/query.js";
+import type { PageMatch, SearchResult } from "../core/types.js";
 
-const MD_BLOCK_SELECTOR = 'h1, h2, h3, h4, h5, h6, p, li, pre, blockquote, td, th, dt, dd';
+const MD_BLOCK_SELECTOR = "h1, h2, h3, h4, h5, h6, p, li, pre, blockquote, td, th, dt, dd";
 
 export interface MarkdownBlock {
     text: string;
@@ -27,7 +27,7 @@ function buildIndex(root: HTMLElement) {
             }
         }
         if (nested) continue;
-        const text = normalizeBlock(element.textContent || '');
+        const text = normalizeBlock(element.textContent || "");
         if (text.length > 0) blocks.push({ text, element });
     }
     markdownBlocks = blocks;
@@ -60,23 +60,23 @@ export function clearMarkdownIndex() {
 
 export function markdownBlockLabel(index: number): string {
     const block = markdownBlocks[index];
-    if (!block) return '';
+    if (!block) return "";
     for (let current = index; current >= 0; current--) {
         const tag = markdownBlocks[current].element.tagName;
         if (/^H[1-6]$/.test(tag)) {
-            const heading = (markdownBlocks[current].element.textContent || '').trim();
-            return heading ? heading.slice(0, 40) : 'Heading';
+            const heading = (markdownBlocks[current].element.textContent || "").trim();
+            return heading ? heading.slice(0, 40) : "Heading";
         }
     }
 
     const tag = block.element.tagName;
-    if (tag === 'PRE') return 'Code block';
-    if (tag === 'LI') return 'List item';
-    if (tag === 'BLOCKQUOTE') return 'Quote';
-    if (tag === 'TD' || tag === 'TH') return 'Table cell';
-    if (tag === 'DT') return 'Term';
-    if (tag === 'DD') return 'Definition';
-    return 'Paragraph';
+    if (tag === "PRE") return "Code block";
+    if (tag === "LI") return "List item";
+    if (tag === "BLOCKQUOTE") return "Quote";
+    if (tag === "TD" || tag === "TH") return "Table cell";
+    if (tag === "DT") return "Term";
+    if (tag === "DD") return "Definition";
+    return "Paragraph";
 }
 
 export function scanMarkdown(tokens: string[]): { results: SearchResult[]; matches: Map<number, PageMatch[]> } {

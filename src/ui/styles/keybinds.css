@@ -119,7 +119,7 @@
     border-radius: 0.32rem;
     background: var(--qv-background);
     color: var(--qv-text);
-    font-family: ui-monospace, 'SFMono-Regular', 'JetBrains Mono', Menlo, monospace;
+    font-family: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, monospace;
     font-size: 0.72rem;
     letter-spacing: 0.01em;
     text-align: center;

@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+import fs from "node:fs";
 
 interface ActiveWatcher {
     sender: Electron.WebContents;
@@ -20,7 +20,7 @@ function stopActiveWatcher() {
     activeWatchedPath = null;
     if (watchedPath) fs.unwatchFile(watchedPath, watcher.listener);
     if (watcher.debounceTimer) clearTimeout(watcher.debounceTimer);
-    watcher.sender.removeListener('destroyed', watcher.destroyedListener);
+    watcher.sender.removeListener("destroyed", watcher.destroyedListener);
 }
 
 function sameFileVersion(left: fs.Stats, right: fs.Stats): boolean {
@@ -42,7 +42,7 @@ export function watchDocument(targetPath: string, sender: Electron.WebContents, 
         debounceTimer: null,
         revision: 0,
         latestStats: null,
-        destroyedListener: () => {},
+        destroyedListener: () => {}
     };
 
     const scheduleReload = () => {
@@ -72,15 +72,15 @@ export function watchDocument(targetPath: string, sender: Electron.WebContents, 
                     return;
                 }
                 if (activeWatcher !== watcher || revision !== watcher.revision || sender.isDestroyed()) return;
-                sender.send('file-updated', payload);
+                sender.send("file-updated", payload);
             } catch (error) {
                 if (activeWatcher !== watcher || revision !== watcher.revision) return;
-                if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-                    if (!sender.isDestroyed()) sender.send('file-unavailable', targetPath);
+                if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+                    if (!sender.isDestroyed()) sender.send("file-unavailable", targetPath);
                     stopActiveWatcher();
                     return;
                 }
-                console.error('[Main] Error re-reading file on update:', error);
+                console.error("[Main] Error re-reading file on update:", error);
             }
         }, 200);
     };
@@ -96,6 +96,6 @@ export function watchDocument(targetPath: string, sender: Electron.WebContents, 
         if (activeWatcher === watcher) stopActiveWatcher();
     };
     activeWatcher = watcher;
-    sender.once('destroyed', watcher.destroyedListener);
+    sender.once("destroyed", watcher.destroyedListener);
     fs.watchFile(targetPath, { interval: 100 }, watcher.listener);
 }
