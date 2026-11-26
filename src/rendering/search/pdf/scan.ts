@@ -1,10 +1,10 @@
 import { PdfState, isPdfViewerBusy } from '../../pdf/state.js';
 import type { PageMatch, SearchResult } from '../core/types.js';
 import { ensureIndexed, pageIndexes } from './pageIndexStore.js';
-import { sortResults, tokenMatch } from '../core/query.js';
+import { matchText } from '../core/fuzzy.js';
+import { sortResults } from '../core/query.js';
 
 const SCAN_CHUNK = 10;
-const SCAN_RESULT_CAP = 40;
 const PAGE_INDEX_TIMEOUT = 10000;
 const BUSY_DELAY = 120;
 
@@ -19,23 +19,25 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
 export async function scanPdf(
     tokens: string[],
     isCurrent: () => boolean,
-    onUpdate: (results: SearchResult[], matches: Map<number, PageMatch>, done: number, total: number) => void,
+    onUpdate: (results: SearchResult[], matches: Map<number, PageMatch[]>, done: number, total: number) => void,
     startPage = 1,
 ) {
     const doc = PdfState.currentPdfDoc;
     if (!doc) return;
     const total = doc.numPages;
     const results: SearchResult[] = [];
-    const matches = new Map<number, PageMatch>();
+    const matches = new Map<number, PageMatch[]>();
 
     const counted = new Set<number>();
     const addMatch = (page: number, text: string) => {
         if (counted.has(page)) return;
         counted.add(page);
-        const match = tokenMatch(text, tokens);
+        const match = matchText(text, tokens);
         if (!match) return;
-        results.push({ page, score: match.score, start: match.start, end: match.end });
-        matches.set(page, { start: match.start, end: match.end });
+        matches.set(page, match);
+        for (const range of match) {
+            results.push({ page, start: range.start, end: range.end, fuzzy: range.fuzzy });
+        }
     };
 
     for (let page = 1; page <= total; page++) {
@@ -45,7 +47,6 @@ export async function scanPdf(
     sortResults(results);
     if (!isCurrent() || PdfState.currentPdfDoc !== doc) return;
     onUpdate(results, matches, 0, total);
-
 
     const order: number[] = [];
     const first = Math.min(Math.max(1, startPage), total);
@@ -57,7 +58,6 @@ export async function scanPdf(
     const run = async () => {
         while (next < order.length) {
             if (!isCurrent() || PdfState.currentPdfDoc !== doc) return;
-            if (results.length >= SCAN_RESULT_CAP) return;
             const page = order[next++];
             if (!counted.has(page)) {
                 const index = await withTimeout(ensureIndexed(page), PAGE_INDEX_TIMEOUT);

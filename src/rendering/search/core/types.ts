@@ -11,9 +11,9 @@ export interface PageMatch {
 
 export interface SearchResult {
     page: number;
-    score: number;
     start: number;
     end: number;
+    fuzzy: boolean;
 }
 
 export type SearchMode = 'pdf' | 'md';

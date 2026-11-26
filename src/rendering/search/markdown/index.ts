@@ -1,4 +1,5 @@
-import { normalizeBlock, sortResults, tokenMatch } from '../core/query.js';
+import { matchText } from '../core/fuzzy.js';
+import { normalizeBlock, sortResults } from '../core/query.js';
 import type { PageMatch, SearchResult } from '../core/types.js';
 
 const MD_BLOCK_SELECTOR = 'h1, h2, h3, h4, h5, h6, p, li, pre, blockquote, td, th, dt, dd';
@@ -78,14 +79,16 @@ export function markdownBlockLabel(index: number): string {
     return 'Paragraph';
 }
 
-export function scanMarkdown(tokens: string[]): { results: SearchResult[]; matches: Map<number, PageMatch> } {
+export function scanMarkdown(tokens: string[]): { results: SearchResult[]; matches: Map<number, PageMatch[]> } {
     const results: SearchResult[] = [];
-    const matches = new Map<number, PageMatch>();
+    const matches = new Map<number, PageMatch[]>();
     for (let index = 0; index < markdownBlocks.length; index++) {
-        const match = tokenMatch(markdownBlocks[index].text, tokens);
+        const match = matchText(markdownBlocks[index].text, tokens);
         if (!match) continue;
-        results.push({ page: index, score: match.score, start: match.start, end: match.end });
-        matches.set(index, { start: match.start, end: match.end });
+        matches.set(index, match);
+        for (const range of match) {
+            results.push({ page: index, start: range.start, end: range.end, fuzzy: range.fuzzy });
+        }
     }
     sortResults(results);
     return { results, matches };

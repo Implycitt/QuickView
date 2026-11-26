@@ -2,8 +2,6 @@ import type { SearchMode, SearchResult } from '../core/types.js';
 import { markdownBlocks, markdownBlockLabel } from '../markdown/index.js';
 import { pageIndexes } from '../pdf/pageIndexStore.js';
 
-const MAX_RESULTS = 40;
-
 export function renderEmpty() {
     const list = document.getElementById('search-results');
     const count = document.getElementById('search-count');
@@ -29,8 +27,7 @@ export function renderResults(
     if (!list || !count) return;
     selectedIndex = Math.min(selectedIndex, Math.max(0, results.length - 1));
     list.innerHTML = '';
-    const top = results.slice(0, MAX_RESULTS);
-    if (top.length === 0) {
+    if (results.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'search-result-empty';
         empty.textContent = done === 0 ? 'No matches yet…' : 'No matches';
@@ -40,8 +37,8 @@ export function renderResults(
     }
 
     count.textContent = `${results.length} match${results.length === 1 ? '' : 'es'}${done < total ? ` · ${done}/${total} scanned` : ''}`;
-    for (let index = 0; index < top.length; index++) {
-        const result = top[index];
+    for (let index = 0; index < results.length; index++) {
+        const result = results[index];
         const row = document.createElement('button');
         row.className = `search-result${index === selectedIndex ? ' search-result-selected' : ''}`;
         row.addEventListener('mousedown', (event) => event.preventDefault());

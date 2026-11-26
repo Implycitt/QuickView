@@ -10,7 +10,7 @@ import { initSearchDialog, closeSearchDialog, updateSearchDialog } from './ui/di
 import { renderEmpty, renderResults } from './ui/results.js';
 
 let searchVersion = 0;
-let activeMatches: Map<number, PageMatch> | null = null;
+let activeMatches: Map<number, PageMatch[]> | null = null;
 let currentResults: SearchResult[] = [];
 let selectedIndex = 0;
 let searchMode: SearchMode | null = null;
@@ -20,7 +20,7 @@ function applyAllHighlights() {
     applyMarkdownHighlights(markdownBlocks, activeMatches);
 }
 
-function publishResults(results: SearchResult[], matches: Map<number, PageMatch>, done: number, total: number) {
+function publishResults(results: SearchResult[], matches: Map<number, PageMatch[]>, done: number, total: number) {
     activeMatches = matches;
     setActiveHighlights(matches);
     currentResults = results;
@@ -44,7 +44,6 @@ function selectResult(index: number) {
     );
 }
 
-// The page the reader is on, so the scan can index nearby pages first.
 function currentPdfPage(): number {
     const counter = document.getElementById('page-counter') as HTMLInputElement | null;
     const value = Number(counter?.value);
